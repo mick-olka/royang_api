@@ -1,0 +1,28 @@
+
+
+PRODUCTS
+
+get / [{ _id, name, price, images[], thumbnail, url }]
+
+get /:id { _id, name, price, images[], thumbnail, url }
+
+post / {
+        name: STR
+        price: NUM
+        thumbnail: FILE
+}
+
+post /:id/photos {
+    path: FILE
+    mailColor: STR
+    pillColor: STR
+}
+
+delete /:id (delete product)
+
+delete /:id/photos/:fileName/   (delete photo)
+
+patch /:id {
+    any
+    thumbnail: FILE
+}
