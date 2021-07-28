@@ -16,7 +16,6 @@ const productSchema = mongoose.Schema({
     images: [
         {
             _id: mongoose.Schema.Types.ObjectId,
-            filename: String,
             path: String,
             mainColor: String,
             pillColor: String
@@ -31,7 +30,6 @@ const productSchema = mongoose.Schema({
             data: {type: String, required: true},
         }
     ],
-    url: {type: String, required: true},
 });
 
 module.exports = mongoose.model('Product', productSchema);

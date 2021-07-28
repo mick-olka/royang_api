@@ -1,23 +1,17 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
-const {upload, deleteFile} = require('../utils');
 
-const multer = require('multer');   //
-
-const Product = require('../models/product.js');
+const List = require('../models/list.js');
 
 const link = "http://localhost:5000/";
-const selectArgsMinimized = "_id name code price thumbnail url";
-const selectArgsExtended = "_id name code price thumbnail figures images relatedProducts similarProducts otherFeatures url";
+const selectArgsMinimized = "_id name url";
+const selectArgsExtended = "_id name items url";
 
 router.get('/', ((req, res, next) => {
-    let page = Number(req.query.page);
-    let limit = Number(req.query.limit);
-    Product.find()
+
+    List.find()
         .select(selectArgsMinimized)
-        .limit(limit)
-        .skip(page*limit)
         .exec()
         .then(docs => {
             const response = {
@@ -26,10 +20,7 @@ router.get('/', ((req, res, next) => {
                     return {
                         _id: doc._id,
                         name: doc.name,
-                        code: doc.code,
-                        price: doc.price,
-                        thumbnail: doc.thumbnail,
-                        url: link+"products/" + doc._id
+                        url: link+"products/" + doc.url,
                     }
                 })
             }
@@ -41,24 +32,18 @@ router.get('/', ((req, res, next) => {
         });
 }));
 
-router.get('/:id', ((req, res, next) => {
-    const id = req.params.id;
-    Product.findById(id)
+router.get('/:url', ((req, res, next) => {
+    const url = req.params.url;
+    List.findOne({url: url})
         .select(selectArgsExtended)
+        .populate('product')
         .exec()
         .then(doc => {
             if (doc) {
                 const response = {
                     _id: doc._id,
                     name: doc.name,
-                    code: doc.code,
-                    price: doc.price,
-                    type: doc.type,
-                    images: doc.images,
-                    figures: doc.figures,
-                    relatedProducts: doc.relatedProducts,
-                    similarProducts: doc.similarProducts,
-                    thumbnail: doc.thumbnail,
+                    items: doc.items,
                     url: doc.url,
                 }
                 res.status(200).json(response);
@@ -70,24 +55,12 @@ router.get('/:id', ((req, res, next) => {
         });
 }));
 
-router.post('/', upload.single('thumbnail'), (req, res, next) => {
-    const product = new Product({
+router.post('/', (req, res, next) => {
+    const product = new List({
         _id: new mongoose.Types.ObjectId(),
         name: req.body.name,
-        price: req.body.price,
-        code: req.body.code,
-        type: req.body.type,
-        images: [],
-        thumbnail: link + req.file.path,
-        figures: {
-          height: req.body.height,
-          width: req.body.width,
-          depth: req.body.depth,
-          weight: req.body.weight,
-        },
-        relatedProducts: [],
-        similarProducts: [],
-        otherFeatures: [],
+        items: [],
+        url: req.url,
     });
     product.save().then(result => {
         console.log(result);
@@ -109,7 +82,7 @@ router.post('/', upload.single('thumbnail'), (req, res, next) => {
 router.delete('/:id', (req, res, next) => {
     const id = req.params.id;
 
-    let deleteProduct =()=> Product.deleteOne({_id: id})
+    let deleteProduct =()=> List.deleteOne({_id: id})
         .exec()
         .then(doc => {
             res.status(200).json({
@@ -121,16 +94,11 @@ router.delete('/:id', (req, res, next) => {
             res.status(500).json({error: err});
         });
 
-    Product.findById(id)
+    List.findById(id)
         .select(selectArgsExtended)
         .exec()
         .then(doc => {
             if (doc) {
-                let imgs = doc.images;
-                for (let i = 0; i < imgs.length; i++) {
-                    deleteFile(imgs[i].filename);
-                }
-                deleteFile(doc.thumbnail.split("/").pop());
                 deleteProduct();
             } else res.status(404).json({error: "Not_Found"});
         })
@@ -140,26 +108,20 @@ router.delete('/:id', (req, res, next) => {
         });
 });
 
-router.patch('/:id', upload.single('thumbnail'), (req, res, next) => {
+router.patch('/:id', (req, res, next) => {
     const id = req.params.id;
     const updateOps = {};
     for (let [key, value] of Object.entries(req.body)) {
         updateOps[key] = value;
     }
-    if (req.file) {
-        updateOps["thumbnail"] = link + req.file.path;
-    }
-    Product.findOneAndUpdate({_id: id}, {$set: updateOps}, {returnOriginal: false},)
+    List.findOneAndUpdate({_id: id}, {$set: updateOps}, {returnOriginal: false},)
         .exec()
         .then(doc => {
             if (doc) {
-                if (req.file) {
-                    deleteFile(doc.thumbnail.split("/").pop());
-                }
                 res.status(200).json({
                     message: "PRODUCT UPDATED",
-                    url: link + "products/" + id,
-                    req: req.body,
+                    name: req.name,
+                    url: req.url,
                     prev: doc,
                 });
             } else res.status(404).json({error: "Not_Found"});
