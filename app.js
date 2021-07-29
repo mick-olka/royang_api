@@ -9,6 +9,7 @@ const productRoutes = require('./api/routes/products');
 const productPhotosRoutes = require('./api/routes/productPhotos');
 const salesRoutes = require('./api/routes/sales');
 const listsRoutes = require('./api/routes/lists');
+const listElementsRoutes = require('./api/routes/listElements');
 let getCount=0;
 
 mongoose.connect("mongodb+srv://mick:1234qwer@cluster0.za5fi.mongodb.net/Shop?retryWrites=true&w=majority",
@@ -60,6 +61,7 @@ app.use('/products', productRoutes);
 app.use('/photos', productPhotosRoutes);
 app.use('/sales', salesRoutes);
 app.use('/lists', listsRoutes);
+app.use('/list_elements', listElementsRoutes);
 
 app.use((req, res, next) => {
     const error = new Error('Not Found');

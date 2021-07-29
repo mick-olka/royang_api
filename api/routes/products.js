@@ -53,7 +53,6 @@ router.get('/:id', ((req, res, next) => {
                     name: doc.name,
                     code: doc.code,
                     price: doc.price,
-                    type: doc.type,
                     images: doc.images,
                     figures: doc.figures,
                     relatedProducts: doc.relatedProducts,
@@ -76,7 +75,6 @@ router.post('/', upload.single('thumbnail'), (req, res, next) => {
         name: req.body.name,
         price: req.body.price,
         code: req.body.code,
-        type: req.body.type,
         images: [],
         thumbnail: link + req.file.path,
         figures: {

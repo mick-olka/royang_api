@@ -36,6 +36,9 @@ exports.upload = multer({
 });
 
 exports.productRef = {
-    _id: Schema.Types.ObjectId,
-    link: {type: Schema.Types.ObjectId, ref: 'Product', required: true}
+    prodId: {type: Schema.Types.ObjectId, ref: 'Product', required: true}
 };
+
+exports.readF =()=> fs.readFile("uploads/config.txt", function(err, buf) {
+    console.log(buf.toString());
+});

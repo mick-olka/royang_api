@@ -16,11 +16,11 @@ router.get('/', ((req, res, next) => {
         .then(docs => {
             const response = {
                 count: docs.length,
-                products: docs.map(doc => {
+                lists: docs.map(doc => {
                     return {
                         _id: doc._id,
                         name: doc.name,
-                        url: link+"products/" + doc.url,
+                        url: link+"lists/" + doc.url,
                     }
                 })
             }
@@ -60,7 +60,7 @@ router.post('/', (req, res, next) => {
         _id: new mongoose.Types.ObjectId(),
         name: req.body.name,
         items: [],
-        url: req.url,
+        url: req.body.url,
     });
     product.save().then(result => {
         console.log(result);
