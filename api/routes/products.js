@@ -17,7 +17,7 @@ router.get('/', ((req, res, next) => {
     Product.find()
         .select(selectArgsMinimized)
         .limit(limit)
-        .skip(page*limit)
+        .skip(page * limit)
         .exec()
         .then(docs => {
             const response = {
@@ -29,7 +29,7 @@ router.get('/', ((req, res, next) => {
                         code: doc.code,
                         price: doc.price,
                         thumbnail: doc.thumbnail,
-                        url: link+"products/" + doc._id
+                        url: link + "products/" + doc._id
                     }
                 })
             }
@@ -57,6 +57,7 @@ router.get('/:id', ((req, res, next) => {
                     figures: doc.figures,
                     relatedProducts: doc.relatedProducts,
                     similarProducts: doc.similarProducts,
+                    otherFeatures: doc.otherFeatures,
                     thumbnail: doc.thumbnail,
                     url: doc.url,
                 }
@@ -69,23 +70,17 @@ router.get('/:id', ((req, res, next) => {
         });
 }));
 
-router.post('/', upload.single('thumbnail'), (req, res, next) => {
+router.post('/', (req, res, next) => {
     const product = new Product({
         _id: new mongoose.Types.ObjectId(),
         name: req.body.name,
         price: req.body.price,
         code: req.body.code,
         images: [],
-        thumbnail: link + req.file.path,
-        figures: {
-          height: req.body.height,
-          width: req.body.width,
-          depth: req.body.depth,
-          weight: req.body.weight,
-        },
+        figures: req.body.figures,
         relatedProducts: [],
         similarProducts: [],
-        otherFeatures: [],
+        otherFeatures: req.body.otherFeatures,
     });
     product.save().then(result => {
         console.log(result);
@@ -107,7 +102,7 @@ router.post('/', upload.single('thumbnail'), (req, res, next) => {
 router.delete('/:id', (req, res, next) => {
     const id = req.params.id;
 
-    let deleteProduct =()=> Product.deleteOne({_id: id})
+    let deleteProduct = () => Product.deleteOne({_id: id})
         .exec()
         .then(doc => {
             res.status(200).json({
@@ -138,33 +133,27 @@ router.delete('/:id', (req, res, next) => {
         });
 });
 
-router.patch('/:id', upload.single('thumbnail'), (req, res, next) => {
+router.patch('/:id', (req, res, next) => {
     const id = req.params.id;
+
     const updateOps = {};
     for (let [key, value] of Object.entries(req.body)) {
         updateOps[key] = value;
     }
-    if (req.file) {
-        updateOps["thumbnail"] = link + req.file.path;
-    }
+
     Product.findOneAndUpdate({_id: id}, {$set: updateOps}, {returnOriginal: false},)
         .exec()
         .then(doc => {
-            if (doc) {
-                if (req.file) {
-                    deleteFile(doc.thumbnail.split("/").pop());
-                }
-                res.status(200).json({
-                    message: "PRODUCT UPDATED",
-                    url: link + "products/" + id,
-                    req: req.body,
-                    prev: doc,
-                });
-            } else res.status(404).json({error: "Not_Found"});
+            res.status(200).json({
+                message: "PRODUCT UPDATED",
+                url: link + "products/" + id,
+                req: req.body,
+            });
         })
         .catch(err => {
             res.status(500).json({error: err});
         });
+
 });
 
 module.exports = router;

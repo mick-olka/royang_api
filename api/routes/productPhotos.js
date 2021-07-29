@@ -14,11 +14,11 @@ router.post('/:id', upload.single('path'), (req, res, next) => {
     const id = req.params.id;
     const img = new Photo({
         _id: new mongoose.Types.ObjectId(),
-        path:  link + req.file.path,
+        path: link + req.file.path,
         mainColor: req.body.mainColor,
         pillColor: req.body.pillColor
     });
-    Product.findByIdAndUpdate({_id: id}, { $push: {images: img} }, {safe: true, upsert: false})
+    Product.findByIdAndUpdate({_id: id}, {$push: {images: img}}, {safe: true, upsert: false})
         .exec()
         .then(doc => {
             if (doc) {
@@ -38,7 +38,7 @@ router.post('/:id', upload.single('path'), (req, res, next) => {
 router.delete('/:id/:fileName/', (req, res, next) => {
     const id = req.params.id;
     const fN = req.params.fileName;
-    Product.updateOne({_id: id}, { $pull: {images: { path: link+'uploads/'+fN } } }, {multi: true})
+    Product.updateOne({_id: id}, {$pull: {images: {path: link + 'uploads/' + fN}}}, {multi: true})
         .exec()
         .then(doc => {
             if (doc) {
@@ -53,6 +53,41 @@ router.delete('/:id/:fileName/', (req, res, next) => {
             console.log(err);
             res.status(500).json({error: err});
         });
+});
+
+router.post('/thumbnail/:id', upload.single('thumbnail'), (req, res, next) => {
+    const id = req.params.id;
+
+    const findAndUpdate = () => {
+        Product.findOneAndUpdate({_id: id}, {$set: {thumbnail: link+req.file.path}}, {returnOriginal: false},)
+            .exec()
+            .then(doc => {
+                res.status(200).json({
+                    message: "THUMBNAIL UPDATED",
+                    url: link + "products/" + id,
+                    req: req.body,
+                    file: link+req.file.path,
+                });
+            })
+            .catch(err => {
+                res.status(500).json({error: err});
+            });
+    }
+
+    Product.findById(id)
+        .select("_id thumbnail")
+        .exec()
+        .then(doc => {
+            if (doc) {
+                findAndUpdate();//  call update
+                if (req.file) deleteFile(doc.thumbnail.split('/').pop());//  del thumb
+            } else res.status(404).json({error: "Not_Found"});
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(500).json({error: err});
+        });
+
 });
 
 module.exports = router;
