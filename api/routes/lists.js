@@ -36,7 +36,7 @@ router.get('/:url', ((req, res, next) => {
     const url = req.params.url;
     List.findOne({url: url})
         .select(selectArgsExtended)
-        .populate('product')
+        .populate({path: 'items', select: '_id name code price thumbnail'})
         .exec()
         .then(doc => {
             if (doc) {
@@ -79,10 +79,10 @@ router.post('/', (req, res, next) => {
         });
 });
 
-router.delete('/:id', (req, res, next) => {
-    const id = req.params.id;
+router.delete('/:url', (req, res, next) => {
+    const url = req.params.url;
 
-    let deleteProduct =()=> List.deleteOne({_id: id})
+    let deleteProduct =()=> List.deleteOne({url: url})
         .exec()
         .then(doc => {
             res.status(200).json({
@@ -94,7 +94,7 @@ router.delete('/:id', (req, res, next) => {
             res.status(500).json({error: err});
         });
 
-    List.findById(id)
+    List.findOne({url: url})
         .select(selectArgsExtended)
         .exec()
         .then(doc => {
@@ -108,13 +108,13 @@ router.delete('/:id', (req, res, next) => {
         });
 });
 
-router.patch('/:id', (req, res, next) => {
-    const id = req.params.id;
+router.patch('/:url', (req, res, next) => {
+    const url = req.params.url;
     const updateOps = {};
     for (let [key, value] of Object.entries(req.body)) {
         updateOps[key] = value;
     }
-    List.findOneAndUpdate({_id: id}, {$set: updateOps}, {returnOriginal: false},)
+    List.findOneAndUpdate({url: url}, {$set: updateOps}, {returnOriginal: false},)
         .exec()
         .then(doc => {
             if (doc) {

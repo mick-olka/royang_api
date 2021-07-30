@@ -10,7 +10,7 @@ const {deleteFile, upload} = require("../utils");
 const link = "http://localhost:5000/";
 
 router.post('/:id', upload.single('path'), (req, res, next) => {
-    console.log(req);
+    console.log(req.file);
     const id = req.params.id;
     const img = new Photo({
         _id: new mongoose.Types.ObjectId(),

@@ -4,15 +4,15 @@ const mongoose = require('mongoose');
 const multer = require('multer');   //  needs for fetching form-data
 
 const List = require('../models/list.js');
+const Product = require('../models/product');
 
 const link = "http://localhost:5000/";
 
-router.post('/:id', (req, res, next) => {
-    const id = req.params.id;
-    const el = {
-        prodId: req.body.prodId,
-    };
-    List.findByIdAndUpdate({_id: id}, { $push: {items: el} }, {safe: true, upsert: false})
+router.post('/:list_url', (req, res, next) => {
+    const list_url = req.params.list_url;
+    let pid=req.body.prodId;
+
+    List.findOneAndUpdate({url: list_url}, { $push: {items: pid} }, {safe: true, upsert: false})
         .exec()
         .then(doc => {
             if (doc) {
@@ -28,10 +28,10 @@ router.post('/:id', (req, res, next) => {
         });
 });
 
-router.delete('/:id/:elId/', (req, res, next) => {
-    const id = req.params.id;
+router.delete('/:url/:elId/', (req, res, next) => {
+    const url = req.params.url;
     const elId = req.params.elId;
-    Product.updateOne({_id: id}, { $pull: {items: { prodId: elId } } }, {multi: true})
+    List.updateOne({url: url}, { $pull: {items: elId } }, {multi: true})
         .exec()
         .then(doc => {
             if (doc) {
