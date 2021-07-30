@@ -4,12 +4,14 @@ const app = express();
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const cookies = require("cookie-parser");
 
 const productRoutes = require('./api/routes/products');
 const productPhotosRoutes = require('./api/routes/productPhotos');
 const salesRoutes = require('./api/routes/sales');
 const listsRoutes = require('./api/routes/lists');
 const listElementsRoutes = require('./api/routes/listElements');
+const loginRoutes = require('./api/routes/admin');
 let getCount=0;
 
 mongoose.connect("mongodb+srv://mick:1234qwer@cluster0.za5fi.mongodb.net/Shop?retryWrites=true&w=majority",
@@ -20,12 +22,11 @@ mongoose.connect("mongodb+srv://mick:1234qwer@cluster0.za5fi.mongodb.net/Shop?re
         useCreateIndex: true,
     });
 
+app.use(cookies());
 app.use(morgan('dev')); //  dev
 app.use('/uploads', express.static('uploads'));
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
-
-
 
 app.use((req, res, next) => {
     const corsWhiteList = [
@@ -62,6 +63,7 @@ app.use('/photos', productPhotosRoutes);
 app.use('/sales', salesRoutes);
 app.use('/lists', listsRoutes);
 app.use('/list_elements', listElementsRoutes);
+app.use('/admin', loginRoutes);
 
 app.use((req, res, next) => {
     const error = new Error('Not Found');
