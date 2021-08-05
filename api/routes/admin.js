@@ -10,7 +10,7 @@ router.get('/login/check', (req, res) => {
     if (req.cookies.data) {
         res.status(200).json({msg: "SUCCESS", code: 0});
     } else {
-        res.status(404).json({error: "Data_Error", code: 1});
+        res.status(203).json({msg: "NOT", code: 1});
     }
 });
 
