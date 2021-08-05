@@ -3,12 +3,13 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const multer = require('multer');   //  needs for fetching form-data
 
+const checkAuth = require('../middleware/check-auth');
 const List = require('../models/list.js');
 const Product = require('../models/product');
 
 const link = "http://localhost:5000/";
 
-router.post('/:list_url', (req, res, next) => {
+router.post('/:list_url', checkAuth, (req, res, next) => {
     const list_url = req.params.list_url;
     let pid=req.body.prodId;
 
@@ -28,7 +29,7 @@ router.post('/:list_url', (req, res, next) => {
         });
 });
 
-router.delete('/:url/:elId/', (req, res, next) => {
+router.delete('/:url/:elId/', checkAuth, (req, res, next) => {
     const url = req.params.url;
     const elId = req.params.elId;
     List.updateOne({url: url}, { $pull: {items: elId } }, {multi: true})

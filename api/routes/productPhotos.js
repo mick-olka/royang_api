@@ -3,13 +3,14 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const multer = require('multer');   //  needs for fetching form-data
 
+const checkAuth = require('../middleware/check-auth');
 const Product = require('../models/product.js');
 const Photo = require('../models/photo.js');
 const {deleteFile, upload} = require("../utils");
 
 const link = "http://localhost:5000/";
 
-router.post('/:id', upload.single('path'), (req, res, next) => {
+router.post('/:id', checkAuth, upload.single('path'), (req, res, next) => {
     console.log(req.file);
     const id = req.params.id;
     const img = new Photo({
@@ -36,7 +37,7 @@ router.post('/:id', upload.single('path'), (req, res, next) => {
         });
 });
 
-router.delete('/:id/:fileName/', (req, res, next) => {
+router.delete('/:id/:fileName/', checkAuth, (req, res, next) => {
     const id = req.params.id;
     const fN = req.params.fileName;
     Product.updateOne({_id: id}, {$pull: {images: {path: link + 'uploads/' + fN}}}, {multi: true})
@@ -57,7 +58,7 @@ router.delete('/:id/:fileName/', (req, res, next) => {
         });
 });
 
-router.post('/thumbnail/:id', upload.single('thumbnail'), (req, res, next) => {
+router.post('/thumbnail/:id', checkAuth, upload.single('thumbnail'), (req, res, next) => {
     const id = req.params.id;
 
     const findAndUpdate = () => {

@@ -101,7 +101,7 @@ router.post('/', checkAuth, (req, res, next) => {
         });
 });
 
-router.delete('/:id', (req, res, next) => {
+router.delete('/:id', checkAuth, (req, res, next) => {
     const id = req.params.id;
 
     let deleteProduct = () => Product.deleteOne({_id: id})
@@ -135,7 +135,7 @@ router.delete('/:id', (req, res, next) => {
         });
 });
 
-router.patch('/:id', (req, res, next) => {
+router.patch('/:id', checkAuth, (req, res, next) => {
     const id = req.params.id;
 
     const updateOps = {};

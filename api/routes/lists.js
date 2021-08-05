@@ -3,6 +3,7 @@ const router = express.Router();
 const mongoose = require('mongoose');
 
 const List = require('../models/list.js');
+const checkAuth = require('../middleware/check-auth');
 
 const link = "http://localhost:5000/";
 const selectArgsMinimized = "_id name url";
@@ -55,7 +56,7 @@ router.get('/:url', ((req, res, next) => {
         });
 }));
 
-router.post('/', (req, res, next) => {
+router.post('/', checkAuth, (req, res, next) => {
     const product = new List({
         _id: new mongoose.Types.ObjectId(),
         name: req.body.name,
@@ -80,7 +81,7 @@ router.post('/', (req, res, next) => {
         });
 });
 
-router.delete('/:url', (req, res, next) => {
+router.delete('/:url', checkAuth, (req, res, next) => {
     const url = req.params.url;
 
     let deleteProduct =()=> List.deleteOne({url: url})
@@ -109,7 +110,7 @@ router.delete('/:url', (req, res, next) => {
         });
 });
 
-router.patch('/:url', (req, res, next) => {
+router.patch('/:url', checkAuth, (req, res, next) => {
     const url = req.params.url;
     const updateOps = {};
     for (let [key, value] of Object.entries(req.body)) {
