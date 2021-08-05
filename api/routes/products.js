@@ -87,6 +87,7 @@ router.post('/', checkAuth, (req, res, next) => {
         console.log(result);
         res.status(201).json({
             message: "CREATED",
+            code: 0,
             result: {
                 _id: result._id,
                 name: result.name,
@@ -96,7 +97,7 @@ router.post('/', checkAuth, (req, res, next) => {
     })
         .catch(err => {
             console.log(err);
-            res.status(500).json({error: err});
+            res.status(500).json({error: err, code: 1});
         });
 });
 
@@ -107,12 +108,12 @@ router.delete('/:id', (req, res, next) => {
         .exec()
         .then(doc => {
             res.status(200).json({
-                message: "DELETED"
+                message: "DELETED", code: 0
             });
         })
         .catch(err => {
             console.log(err);
-            res.status(500).json({error: err});
+            res.status(500).json({error: err, code: 1});
         });
 
     Product.findById(id)
@@ -149,10 +150,11 @@ router.patch('/:id', (req, res, next) => {
                 message: "PRODUCT UPDATED",
                 url: link + "products/" + id,
                 req: req.body,
+                code: 0,
             });
         })
         .catch(err => {
-            res.status(500).json({error: err});
+            res.status(500).json({error: err, code: 1});
         });
 
 });

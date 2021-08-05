@@ -16,7 +16,7 @@ router.post('/:id', upload.single('path'), (req, res, next) => {
         _id: new mongoose.Types.ObjectId(),
         path: link + req.file.path,
         mainColor: req.body.mainColor,
-        pillColor: req.body.pillColor
+        pillColor: req.body.pillColor,
     });
     Product.findByIdAndUpdate({_id: id}, {$push: {images: img}}, {safe: true, upsert: false})
         .exec()
@@ -26,12 +26,13 @@ router.post('/:id', upload.single('path'), (req, res, next) => {
                     {
                         message: "PUSHED PHOTO",
                         url: link + req.file.path,
+                        code: 0
                     });
-            } else res.status(404).json({error: "Not_Found"});
+            } else res.status(404).json({error: "Not_Found", code: 1});
         })
         .catch(err => {
             console.log(err);
-            res.status(500).json({error: err});
+            res.status(500).json({error: err, code: 1});
         });
 });
 
@@ -46,12 +47,13 @@ router.delete('/:id/:fileName/', (req, res, next) => {
                 res.status(200).json(
                     {
                         message: "DELETED PHOTO",
+                        code: 0
                     });
-            } else res.status(404).json({error: "Not_Found"});
+            } else res.status(404).json({error: "Not_Found", code: 1});
         })
         .catch(err => {
             console.log(err);
-            res.status(500).json({error: err});
+            res.status(500).json({error: err, code: 1});
         });
 });
 
@@ -67,10 +69,11 @@ router.post('/thumbnail/:id', upload.single('thumbnail'), (req, res, next) => {
                     url: link + "products/" + id,
                     req: req.body,
                     file: link+req.file.path,
+                    code: 0
                 });
             })
             .catch(err => {
-                res.status(500).json({error: err});
+                res.status(500).json({error: err, code: 1});
             });
     }
 
@@ -81,11 +84,11 @@ router.post('/thumbnail/:id', upload.single('thumbnail'), (req, res, next) => {
             if (doc) {
                 findAndUpdate();//  call update
                 if (req.file) deleteFile(doc.thumbnail.split('/').pop());//  del thumb
-            } else res.status(404).json({error: "Not_Found"});
+            } else res.status(404).json({error: "Not_Found", code: 1});
         })
         .catch(err => {
             console.log(err);
-            res.status(500).json({error: err});
+            res.status(500).json({error: err, code: 1});
         });
 
 });

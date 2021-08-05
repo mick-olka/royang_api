@@ -18,13 +18,13 @@ router.post('/:list_url', (req, res, next) => {
             if (doc) {
                 res.status(200).json(
                     {
-                        message: "PUSHED ITEM TO LIST",
+                        message: "PUSHED ITEM TO LIST", code: 0
                     });
-            } else res.status(404).json({error: "Not_Found"});
+            } else res.status(404).json({error: "Not_Found", code: 1});
         })
         .catch(err => {
             console.log(err);
-            res.status(500).json({error: err});
+            res.status(500).json({error: err, code: 1});
         });
 });
 
@@ -37,13 +37,13 @@ router.delete('/:url/:elId/', (req, res, next) => {
             if (doc) {
                 res.status(200).json(
                     {
-                        message: "DELETED LIST ITEM",
+                        message: "DELETED LIST ITEM", code: 0
                     });
-            } else res.status(404).json({error: "Not_Found"});
+            } else res.status(404).json({error: "Not_Found", code: 1});
         })
         .catch(err => {
             console.log(err);
-            res.status(500).json({error: err});
+            res.status(500).json({error: err, code: 1});
         });
 });
 

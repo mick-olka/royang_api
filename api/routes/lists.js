@@ -70,12 +70,13 @@ router.post('/', (req, res, next) => {
                 _id: result._id,
                 name: result.name,
                 url: result.url,
+                code: 0,
             }
         });
     })
         .catch(err => {
             console.log(err);
-            res.status(500).json({error: err});
+            res.status(500).json({error: err, code: 1});
         });
 });
 
@@ -86,12 +87,12 @@ router.delete('/:url', (req, res, next) => {
         .exec()
         .then(doc => {
             res.status(200).json({
-                message: "DELETED"
+                message: "DELETED", code: 0
             });
         })
         .catch(err => {
             console.log(err);
-            res.status(500).json({error: err});
+            res.status(500).json({error: err, code: 1});
         });
 
     List.findOne({url: url})
@@ -123,11 +124,12 @@ router.patch('/:url', (req, res, next) => {
                     name: req.name,
                     url: req.url,
                     prev: doc,
+                    code: 0,
                 });
-            } else res.status(404).json({error: "Not_Found"});
+            } else res.status(404).json({error: "Not_Found", code: 1});
         })
         .catch(err => {
-            res.status(500).json({error: err});
+            res.status(500).json({error: err, code: 1});
         });
 });
 
