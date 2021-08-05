@@ -1,13 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const mongoose = require('mongoose');
 const multer = require('multer');   //  needs for fetching form-data
 
 const checkAuth = require('../middleware/check-auth');
 const List = require('../models/list.js');
-const Product = require('../models/product');
-
-const link = "http://localhost:5000/";
 
 router.post('/:list_url', checkAuth, (req, res, next) => {
     const list_url = req.params.list_url;
