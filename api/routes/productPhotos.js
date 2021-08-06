@@ -8,7 +8,7 @@ const Product = require('../models/product.js');
 const Photo = require('../models/photo.js');
 const {deleteFile, upload} = require("../utils");
 
-const link = "http://localhost:5000/";
+const link = process.env.BASE_LINK;
 
 router.post('/:id', checkAuth, upload.single('path'), (req, res, next) => {
     console.log(req.file);
@@ -58,9 +58,8 @@ router.delete('/:id/:fileName/', checkAuth, (req, res, next) => {
         });
 });
 
-router.post('/thumbnail/:id', checkAuth, upload.single('thumbnail'), (req, res, next) => {
+router.post('/thumbnail/:id', upload.single('thumbnail'), checkAuth, (req, res, next) => {
     const id = req.params.id;
-
     const findAndUpdate = () => {
         Product.findOneAndUpdate({_id: id}, {$set: {thumbnail: link+req.file.path}}, {returnOriginal: false},)
             .exec()
@@ -73,9 +72,6 @@ router.post('/thumbnail/:id', checkAuth, upload.single('thumbnail'), (req, res, 
                     code: 0
                 });
             })
-            .catch(err => {
-                res.status(500).json({error: err, code: 1});
-            });
     }
 
     Product.findById(id)
@@ -84,12 +80,12 @@ router.post('/thumbnail/:id', checkAuth, upload.single('thumbnail'), (req, res, 
         .then(doc => {
             if (doc) {
                 findAndUpdate();//  call update
-                if (req.file) deleteFile(doc.thumbnail.split('/').pop());//  del thumb
+                if (req.file&&doc.thumbnail) deleteFile(doc.thumbnail.split('/').pop());//  del thumb
             } else res.status(404).json({error: "Not_Found", code: 1});
         })
         .catch(err => {
             console.log(err);
-            res.status(500).json({error: err, code: 1});
+            res.status(500).json({data: req.params, error: err, code: 1});
         });
 
 });

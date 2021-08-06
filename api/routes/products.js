@@ -8,7 +8,7 @@ const multer = require('multer');   //
 
 const Product = require('../models/product.js');
 
-const link = "http://localhost:5000/";
+const link = process.env.BASE_LINK;
 const selectArgsMinimized = "_id name code price thumbnail url";
 const selectArgsExtended = "_id name code price thumbnail figures images relatedProducts similarProducts otherFeatures url";
 
