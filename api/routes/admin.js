@@ -3,7 +3,7 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const multer = require('multer');
 
-const link = "http://localhost:5000/";
+const link = process.env.BASE_LINK;
 
 router.get('/login/check', (req, res) => {
     console.log(req.cookies);
