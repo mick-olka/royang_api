@@ -15,7 +15,7 @@ router.post('/:list_url', checkAuth, (req, res, next) => {
             if (doc) {
                 res.status(200).json(
                     {
-                        message: "PUSHED ITEM TO LIST", code: 0
+                        message: "PUSHED ITEM TO LIST", code: 0, productId: pid,
                     });
             } else res.status(404).json({error: "Not_Found", code: 1});
         })
@@ -34,7 +34,7 @@ router.delete('/:url/:elId/', checkAuth, (req, res, next) => {
             if (doc) {
                 res.status(200).json(
                     {
-                        message: "DELETED LIST ITEM", code: 0
+                        message: "DELETED LIST ITEM", code: 0, productId: elId,
                     });
             } else res.status(404).json({error: "Not_Found", code: 1});
         })

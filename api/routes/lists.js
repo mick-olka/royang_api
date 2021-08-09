@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 const List = require('../models/list.js');
 const checkAuth = require('../middleware/check-auth');
 
-const link = "http://localhost:5000/";
+const link = process.env.BASE_LINK;
 const selectArgsMinimized = "_id name url";
 const selectArgsExtended = "_id name items url";
 
@@ -45,7 +45,7 @@ router.get('/:url', ((req, res, next) => {
                     _id: doc._id,
                     name: doc.name,
                     items: doc.items,
-                    url: doc.url,
+                    url: link+"lists/" + doc.url,
                 }
                 res.status(200).json(response);
             } else res.status(404).json({error: "Not_Found"});
@@ -64,7 +64,6 @@ router.post('/', checkAuth, (req, res, next) => {
         url: req.body.url,
     });
     product.save().then(result => {
-        console.log(result);
         res.status(201).json({
             message: "CREATED",
             result: {
@@ -88,7 +87,7 @@ router.delete('/:url', checkAuth, (req, res, next) => {
         .exec()
         .then(doc => {
             res.status(200).json({
-                message: "DELETED", code: 0
+                message: "DELETED", code: 0, url: url,
             });
         })
         .catch(err => {
@@ -122,9 +121,7 @@ router.patch('/:url', checkAuth, (req, res, next) => {
             if (doc) {
                 res.status(200).json({
                     message: "PRODUCT UPDATED",
-                    name: req.name,
-                    url: req.url,
-                    prev: doc,
+                    updatedData: updateOps,
                     code: 0,
                 });
             } else res.status(404).json({error: "Not_Found", code: 1});

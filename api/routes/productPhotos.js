@@ -15,7 +15,7 @@ router.post('/:id', checkAuth, upload.single('path'), (req, res, next) => {
     const id = req.params.id;
     const img = new Photo({
         _id: new mongoose.Types.ObjectId(),
-        path: link + req.file.path,
+        path: req.file.path,
         mainColor: req.body.mainColor,
         pillColor: req.body.pillColor,
     });
@@ -40,7 +40,8 @@ router.post('/:id', checkAuth, upload.single('path'), (req, res, next) => {
 router.delete('/:id/:fileName/', checkAuth, (req, res, next) => {
     const id = req.params.id;
     const fN = req.params.fileName;
-    Product.updateOne({_id: id}, {$pull: {images: {path: link + 'uploads/' + fN}}}, {multi: true})
+    const url = link + 'uploads/' + fN;
+    Product.updateOne({_id: id}, {$pull: {images: {path: 'uploads/' + fN}}}, {multi: true})
         .exec()
         .then(doc => {
             if (doc) {
@@ -48,6 +49,7 @@ router.delete('/:id/:fileName/', checkAuth, (req, res, next) => {
                 res.status(200).json(
                     {
                         message: "DELETED PHOTO",
+                        url: url,
                         code: 0
                     });
             } else res.status(404).json({error: "Not_Found", code: 1});
@@ -61,7 +63,7 @@ router.delete('/:id/:fileName/', checkAuth, (req, res, next) => {
 router.post('/thumbnail/:id', upload.single('thumbnail'), checkAuth, (req, res, next) => {
     const id = req.params.id;
     const findAndUpdate = () => {
-        Product.findOneAndUpdate({_id: id}, {$set: {thumbnail: link+req.file.path}}, {returnOriginal: false},)
+        Product.findOneAndUpdate({_id: id}, {$set: {thumbnail: req.file.path}}, {returnOriginal: false},)
             .exec()
             .then(doc => {
                 res.status(200).json({

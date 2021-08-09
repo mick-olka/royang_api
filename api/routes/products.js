@@ -29,7 +29,7 @@ router.get('/', ((req, res, next) => {
                         name: doc.name,
                         code: doc.code,
                         price: doc.price,
-                        thumbnail: doc.thumbnail,
+                        thumbnail:link + doc.thumbnail,
                         url: link + "products/" + doc._id
                     }
                 })
@@ -46,6 +46,8 @@ router.get('/:id', ((req, res, next) => {
     const id = req.params.id;
     Product.findById(id)
         .select(selectArgsExtended)
+        .populate({path: 'relatedProducts', select: '_id name code price thumbnail'})
+        .populate({path: 'similarProducts', select: '_id name code price thumbnail'})
         .exec()
         .then(doc => {
             if (doc) {
@@ -59,8 +61,8 @@ router.get('/:id', ((req, res, next) => {
                     relatedProducts: doc.relatedProducts,
                     similarProducts: doc.similarProducts,
                     otherFeatures: doc.otherFeatures,
-                    thumbnail: doc.thumbnail,
-                    url: doc.url,
+                    thumbnail: link + doc.thumbnail,
+                    url: link + "products/" + doc._id,
                 }
                 res.status(200).json(response);
             } else res.status(404).json({error: "Not_Found"});
@@ -91,7 +93,7 @@ router.post('/', checkAuth, (req, res, next) => {
             result: {
                 _id: result._id,
                 name: result.name,
-                url: result.url,
+                url: link + "products/" + result._id,
             }
         });
     })
@@ -108,7 +110,7 @@ router.delete('/:id', checkAuth, (req, res, next) => {
         .exec()
         .then(doc => {
             res.status(200).json({
-                message: "DELETED", code: 0
+                message: "DELETED", code: 0, _id: id,
             });
         })
         .catch(err => {
@@ -123,9 +125,9 @@ router.delete('/:id', checkAuth, (req, res, next) => {
             if (doc) {
                 let imgs = doc.images;
                 for (let i = 0; i < imgs.length; i++) {
-                    deleteFile(imgs[i].filename);
+                    deleteFile(imgs[i].path.split('/').pop());
                 }
-                deleteFile(doc.thumbnail.split("/").pop());
+                if (doc.thumbnail) deleteFile(doc.thumbnail.split("/").pop());
                 deleteProduct();
             } else res.status(404).json({error: "Not_Found"});
         })

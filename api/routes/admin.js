@@ -1,12 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const mongoose = require('mongoose');
-const multer = require('multer');
-
-const link = process.env.BASE_LINK;
 
 router.get('/login/check', (req, res) => {
-    console.log(req.cookies);
     if (req.cookies.data) {
         res.status(200).json({msg: "SUCCESS", code: 0});
     } else {

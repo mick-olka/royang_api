@@ -21,8 +21,8 @@ const productSchema = mongoose.Schema({
             pillColor: String
         }
     ],
-    relatedProducts: [{productRef}],
-    similarProducts: [{productRef}],
+    relatedProducts: [{type: mongoose.Schema.Types.ObjectId, ref: 'Product'}],
+    similarProducts: [{type: mongoose.Schema.Types.ObjectId, ref: 'Product'}],
     otherFeatures: [],
 });
 
