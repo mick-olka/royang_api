@@ -7,12 +7,7 @@ const productSchema = mongoose.Schema({
     code: {type: String, required: false},
     price: {type: Number, required: true},
     thumbnail: {type: String, required: false},
-    figures: {
-        height: {type: Number, required: false},
-        width: {type: Number, required: false},
-        depth: {type: Number, required: false},
-        weight: {type: Number, required: false},
-    },
+    features: [{key: {type: String, required: true}, value: {type: String, required: true}}],
     images: [
         {
             _id: mongoose.Schema.Types.ObjectId,
@@ -23,7 +18,7 @@ const productSchema = mongoose.Schema({
     ],
     relatedProducts: [{type: mongoose.Schema.Types.ObjectId, ref: 'Product'}],
     similarProducts: [{type: mongoose.Schema.Types.ObjectId, ref: 'Product'}],
-    otherFeatures: [],
+    //otherFeatures: [],
 });
 
 module.exports = mongoose.model('Product', productSchema);

@@ -10,7 +10,7 @@ const Product = require('../models/product.js');
 
 const link = process.env.BASE_LINK;
 const selectArgsMinimized = "_id name code price thumbnail url";
-const selectArgsExtended = "_id name code price thumbnail figures images relatedProducts similarProducts otherFeatures url";
+const selectArgsExtended = "_id name code price thumbnail features images relatedProducts similarProducts url";
 
 router.get('/', ((req, res, next) => {
     let page = Number(req.query.page);
@@ -57,10 +57,9 @@ router.get('/:id', ((req, res, next) => {
                     code: doc.code,
                     price: doc.price,
                     images: doc.images,
-                    figures: doc.figures,
+                    features: doc.features,
                     relatedProducts: doc.relatedProducts,
                     similarProducts: doc.similarProducts,
-                    otherFeatures: doc.otherFeatures,
                     thumbnail: link + doc.thumbnail,
                     url: link + "products/" + doc._id,
                 }
@@ -79,11 +78,10 @@ router.post('/', checkAuth, (req, res, next) => {
         name: req.body.name,
         price: req.body.price,
         code: req.body.code,
+        features: req.body.features,
         images: [],
-        figures: req.body.figures,
         relatedProducts: [],
         similarProducts: [],
-        otherFeatures: req.body.otherFeatures,
     });
     product.save().then(result => {
         console.log(result);
