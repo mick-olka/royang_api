@@ -18,6 +18,7 @@ const productSchema = mongoose.Schema({
     ],
     relatedProducts: [{type: mongoose.Schema.Types.ObjectId, ref: 'Product'}],
     similarProducts: [{type: mongoose.Schema.Types.ObjectId, ref: 'Product'}],
+    types: [],
     //otherFeatures: [],
 });
 

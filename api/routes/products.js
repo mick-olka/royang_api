@@ -10,7 +10,7 @@ const Product = require('../models/product.js');
 
 const link = process.env.BASE_LINK;
 const selectArgsMinimized = "_id name code price thumbnail url";
-const selectArgsExtended = "_id name code price thumbnail features images relatedProducts similarProducts url";
+const selectArgsExtended = "_id name code price thumbnail features images relatedProducts similarProducts types";
 
 router.get('/', ((req, res, next) => {
     let page = Number(req.query.page);
@@ -61,6 +61,7 @@ router.get('/:id', ((req, res, next) => {
                     relatedProducts: doc.relatedProducts,
                     similarProducts: doc.similarProducts,
                     thumbnail: doc.thumbnail,
+                    types: doc.types,
                     url: link + "products/" + doc._id,
                 }
                 res.status(200).json(response);
