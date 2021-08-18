@@ -29,7 +29,7 @@ router.get('/', ((req, res, next) => {
                         name: doc.name,
                         code: doc.code,
                         price: doc.price,
-                        thumbnail:link + doc.thumbnail,
+                        thumbnail: doc.thumbnail,
                         url: link + "products/" + doc._id
                     }
                 })
@@ -60,14 +60,14 @@ router.get('/:id', ((req, res, next) => {
                     features: doc.features,
                     relatedProducts: doc.relatedProducts,
                     similarProducts: doc.similarProducts,
-                    thumbnail: link + doc.thumbnail,
+                    thumbnail: doc.thumbnail,
                     url: link + "products/" + doc._id,
                 }
                 res.status(200).json(response);
             } else res.status(404).json({error: "Not_Found"});
         })
         .catch(err => {
-            console.log(err);
+            //console.log(err);
             res.status(500).json({error: err});
         });
 }));
@@ -110,10 +110,6 @@ router.delete('/:id', checkAuth, (req, res, next) => {
             res.status(200).json({
                 message: "DELETED", code: 0, _id: id,
             });
-        })
-        .catch(err => {
-            console.log(err);
-            res.status(500).json({error: err, code: 1});
         });
 
     Product.findById(id)

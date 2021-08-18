@@ -21,7 +21,7 @@ router.get('/', ((req, res, next) => {
                     return {
                         _id: doc._id,
                         name: doc.name,
-                        url: link+"lists/" + doc.url,
+                        url: doc.url,
                     }
                 })
             }
@@ -45,7 +45,7 @@ router.get('/:url', ((req, res, next) => {
                     _id: doc._id,
                     name: doc.name,
                     items: doc.items,
-                    url: link+"lists/" + doc.url,
+                    url: doc.url,
                 }
                 res.status(200).json(response);
             } else res.status(404).json({error: "Not_Found"});
@@ -70,8 +70,8 @@ router.post('/', checkAuth, (req, res, next) => {
                 _id: result._id,
                 name: result.name,
                 url: result.url,
-                code: 0,
-            }
+            },
+            code: 0,
         });
     })
         .catch(err => {
