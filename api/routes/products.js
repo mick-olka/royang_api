@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
-const {deleteFile} = require('../utils');
+const {deleteFile, selectArgsMinimized, selectArgsExtended} = require('../utils');
 const checkAuth = require('../middleware/check-auth');
 
 const multer = require('multer');   //
@@ -9,8 +9,6 @@ const multer = require('multer');   //
 const Product = require('../models/product.js');
 
 const link = process.env.BASE_LINK;
-const selectArgsMinimized = "_id name code price thumbnail url";
-const selectArgsExtended = "_id name code price thumbnail features images relatedProducts similarProducts types";
 
 router.get('/', ((req, res, next) => {
     let page = Number(req.query.page);
@@ -29,6 +27,7 @@ router.get('/', ((req, res, next) => {
                         name: doc.name,
                         code: doc.code,
                         price: doc.price,
+                        oldPrice: doc.oldPrice,
                         thumbnail: doc.thumbnail,
                         url: link + "products/" + doc._id
                     }
@@ -56,6 +55,7 @@ router.get('/:id', ((req, res, next) => {
                     name: doc.name,
                     code: doc.code,
                     price: doc.price,
+                    oldPrice: doc.oldPrice,
                     images: doc.images,
                     features: doc.features,
                     relatedProducts: doc.relatedProducts,
@@ -78,6 +78,7 @@ router.post('/', checkAuth, (req, res, next) => {
         _id: new mongoose.Types.ObjectId(),
         name: req.body.name,
         price: req.body.price,
+        oldPrice: req.oldPrice,
         code: req.body.code,
         features: req.body.features,
         images: [],

@@ -8,7 +8,6 @@ const cookies = require("cookie-parser");
 
 const productRoutes = require('./api/routes/products');
 const productPhotosRoutes = require('./api/routes/productPhotos');
-const salesRoutes = require('./api/routes/sales');
 const listsRoutes = require('./api/routes/lists');
 const listElementsRoutes = require('./api/routes/listElements');
 const loginRoutes = require('./api/routes/admin');
@@ -60,7 +59,6 @@ app.post('/', (req, res) => {
 
 app.use('/products', productRoutes);
 app.use('/photos', productPhotosRoutes);
-app.use('/sales', salesRoutes);
 app.use('/lists', listsRoutes);
 app.use('/list_elements', listElementsRoutes);
 app.use('/admin', loginRoutes);

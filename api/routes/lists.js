@@ -6,8 +6,7 @@ const List = require('../models/list.js');
 const checkAuth = require('../middleware/check-auth');
 
 const link = process.env.BASE_LINK;
-const selectArgsMinimized = "_id name url";
-const selectArgsExtended = "_id name items url";
+const {selectArgsMinimized, selectArgsExtended} = require("../utils");
 
 router.get('/', ((req, res, next) => {
 
@@ -37,7 +36,7 @@ router.get('/:url', ((req, res, next) => {
     const url = req.params.url;
     List.findOne({url: url})
         .select(selectArgsExtended)
-        .populate({path: 'items', select: '_id name code price thumbnail'})
+        .populate({path: 'items', select: selectArgsMinimized})
         .exec()
         .then(doc => {
             if (doc) {
