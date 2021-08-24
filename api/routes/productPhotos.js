@@ -6,7 +6,7 @@ const multer = require('multer');   //  needs for fetching form-data
 const checkAuth = require('../middleware/check-auth');
 const Product = require('../models/product.js');
 const Photo = require('../models/photo.js');
-const {deleteFile, upload} = require("../utils");
+const {deleteFile, upload} = require("../utils/utils");
 
 const link = process.env.BASE_LINK;
 

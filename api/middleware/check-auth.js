@@ -1,7 +1,8 @@
+const { getKey } = require("../routes/admin");
 
 module.exports = (req, res, next) => {
     try {
-        if (req.cookies.data) {
+        if (req.cookies.data===getKey()) {
             next();
         } else {
             res.status(401).json({

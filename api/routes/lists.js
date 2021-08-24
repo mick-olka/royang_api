@@ -6,7 +6,7 @@ const List = require('../models/list.js');
 const checkAuth = require('../middleware/check-auth');
 
 const link = process.env.BASE_LINK;
-const {selectArgsMinimized, selectArgsExtended} = require("../utils");
+const {selectArgsMinimized, selectArgsExtended} = require("../utils/utils");
 
 router.get('/', ((req, res, next) => {
 

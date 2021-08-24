@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const {productRef} = require("../utils");
+const {productRef} = require("../utils/utils");
 
 const listSchema = mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
