@@ -2,6 +2,8 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const { readDat, writeDat } = require('../utils/handlingDat');
 const router = express.Router();
+const checkAuth = require('../middleware/check-auth');
+
 let key = null;
 
 exports.getKey = () => {
@@ -10,7 +12,7 @@ exports.getKey = () => {
 
 
 
-router.get('/login/check', async (req, res) => {
+router.get('/login/check', (req, res) => {
 
     if (req.cookies.data === key) {
         res.status(200).json({ msg: "SUCCESS", code: 0 });
@@ -19,7 +21,25 @@ router.get('/login/check', async (req, res) => {
     }
 });
 
-router.post('/login', async (req, res, next) => {
+router.post('/login/pw', async (req, res) => {
+    checkAuth;
+    let dat = readDat();
+    if (req.cookies.data === key) {
+        bcrypt.compare(req.body.oldData, dat, async (err, result) => {
+            if (err) res.status(403).json({ msg: "Wrong", err: err, code: 1 });
+            else if (req.body.data && result) {
+                const salt = await bcrypt.genSalt(10);
+                const newHashPW = await bcrypt.hash(req.body.data, salt);
+                writeDat(newHashPW);
+                res.clearCookie('data');
+                res.status(200).json({ msg: "SUCCESS", code: 0 });
+            } else { res.status(403).json({ msg: "No_Data", code: -1 }); }
+        });
+
+    } else { res.status(401).json({ msg: "No_Permission", code: 1 }); }
+});
+
+router.post('/login', (req, res, next) => {
     let dat = readDat();
     //console.log(dat);
     let rightPW = false;
@@ -31,20 +51,20 @@ router.post('/login', async (req, res, next) => {
             res.status(500).json({ err: err, code: -1 });
         } else {
 
-        //console.log("RP: " + rightPW);
-        if (rightPW) {
-            key = Math.random().toString(36).slice(-8);
-            res.cookie(`data`, key, {
-                maxAge: 24 * 60 * 60 * 1000, // 24 hours,
-                //secure: true,
-                //httpOnly: true,
-                //sameSite: 'lax'
-            });
-            res.status(200).json({ msg: "SUCCESS", code: 0 });
-        } else {
-            res.status(401).json({ error: "UNAUTHORIZED", code: 1 });
+            //console.log("RP: " + rightPW);
+            if (rightPW) {
+                key = Math.random().toString(36).slice(-8);
+                res.cookie(`data`, key, {
+                    maxAge: 24 * 60 * 60 * 1000, // 24 hours,
+                    //secure: true,
+                    //httpOnly: true,
+                    //sameSite: 'lax'
+                });
+                res.status(200).json({ msg: "SUCCESS", code: 0 });
+            } else {
+                res.status(401).json({ error: "UNAUTHORIZED", code: 1 });
+            }
         }
-    }
     });
 
 });
