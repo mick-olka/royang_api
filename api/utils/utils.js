@@ -39,6 +39,10 @@ exports.productRef = {
     prodId: {type: Schema.Types.ObjectId, ref: 'Product', required: true}
 };
 
+exports.isNumeric=(value)=> {
+    return /^\d+$/.test(value);
+}
+
 exports.selectArgsMinimized = "_id name code price oldPrice thumbnail url";
 exports.selectArgsExtended = "_id name code price oldPrice thumbnail features images relatedProducts similarProducts types";
 

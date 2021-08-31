@@ -31,6 +31,7 @@ app.use(bodyParser.json());
 app.use((req, res, next) => {
     const corsWhiteList = [
         'http://192.168.1.164:3000',
+        'http://192.168.1.163:3000',
         'http://localhost:3000',
     ];
     const origin=req.headers.origin;
