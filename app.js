@@ -12,6 +12,7 @@ const productPhotosRoutes = require('./api/routes/productPhotos');
 const listsRoutes = require('./api/routes/lists');
 const listElementsRoutes = require('./api/routes/listElements');
 const loginRoutes = require('./api/routes/admin');
+const searchRoutes = require('./api/routes/search');
 let getCount=0;
 
 mongoose.connect("mongodb+srv://mick:1234qwer@cluster0.za5fi.mongodb.net/Shop?retryWrites=true&w=majority",
@@ -32,6 +33,7 @@ app.use((req, res, next) => {
     const corsWhiteList = [
         'http://192.168.1.164:3000',
         'http://192.168.1.163:3000',
+        'http://192.168.1.24:3000',
         'http://localhost:3000',
     ];
     const origin=req.headers.origin;
@@ -64,6 +66,7 @@ app.use('/photos', productPhotosRoutes);
 app.use('/lists', listsRoutes);
 app.use('/list_elements', listElementsRoutes);
 app.use('/admin', loginRoutes);
+app.use('/search', searchRoutes);
 
 app.use((req, res, next) => {
     const error = new Error('Not Found');

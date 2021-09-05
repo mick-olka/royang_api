@@ -12,8 +12,12 @@ const {isNumeric} = require("../utils/utils");
 const link = process.env.BASE_LINK;
 
 router.get('/', ((req, res, next) => {
-    let page = Number(req.query.page);
+    let page = Number(req.query.page)-1;
     let limit = Number(req.query.limit);
+    let count = 0;
+    Product.countDocuments({}, function(err, c) {
+        count=c;
+    });
     Product.find()
         .select(selectArgsMinimized)
         .limit(limit)
@@ -21,7 +25,7 @@ router.get('/', ((req, res, next) => {
         .exec()
         .then(docs => {
             const response = {
-                count: docs.length,
+                count: count,
                 products: docs.map(doc => {
                     return {
                         _id: doc._id,
@@ -73,25 +77,6 @@ router.get('/:id', ((req, res, next) => {
             res.status(500).json({error: err});
         });
 }));
-
-router.post('/find', (req, res, next)=>{
-    const str = req.body.string;
-    const regex = new RegExp(str, 'i') // i for case insensitive
-    let filter = {name: {$regex: regex} };
-    if (isNumeric(str)) {
-        filter = {code: {$regex: regex}};
-    }
-    Product.find(filter)
-        .select(selectArgsMinimized)
-        .exec()
-        .then(result =>{
-            res.status(200).json(result);
-        })
-        .catch(err => {
-            //console.log(err);
-            res.status(500).json({error: err});
-        });
-});
 
 router.post('/', checkAuth, (req, res, next) => {
     const product = new Product({
@@ -177,4 +162,4 @@ router.patch('/:id', checkAuth, (req, res, next) => {
 
 });
 
-module.exports = router;
+    module.exports = router;
