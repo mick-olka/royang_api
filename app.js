@@ -21,7 +21,7 @@ mongoose.connect("mongodb+srv://mick:1234qwer@cluster0.za5fi.mongodb.net/Shop?re
         useUnifiedTopology: true,
         useFindAndModify: false,
         useCreateIndex: true,
-    });
+    }).then(r => console.log("connected"));
 
 app.use(cookies());
 app.use(morgan('dev')); //  dev
@@ -31,7 +31,7 @@ app.use(bodyParser.json());
 
 app.use((req, res, next) => {
     const corsWhiteList = [
-        'http://192.168.1.164:3000',
+        'http://192.168.50.163:3000',
         'http://192.168.1.163:3000',
         'http://192.168.1.24:3000',
         'http://localhost:3000',
