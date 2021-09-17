@@ -11,11 +11,11 @@ const {isNumeric} = require("../utils/utils");
 
 const link = process.env.BASE_LINK;
 
-router.get('/', ((req, res, next) => {
+router.get('/', (async (req, res, next) => {
     let page = Number(req.query.page)-1;
     let limit = Number(req.query.limit);
     let count = 0;
-    Product.countDocuments({}, function(err, c) {
+    await Product.countDocuments({}, function(err, c) {
         count=c;
     });
     Product.find()
