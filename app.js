@@ -5,7 +5,6 @@ const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const cookies = require("cookie-parser");
-const {readDat, writeDat} = require('./api/utils/handlingDat.js');
 
 const productRoutes = require('./api/routes/products');
 const productPhotosRoutes = require('./api/routes/productPhotos');

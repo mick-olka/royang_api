@@ -7,7 +7,6 @@ const checkAuth = require('../middleware/check-auth');
 const multer = require('multer');   //
 
 const Product = require('../models/product.js');
-const {isNumeric} = require("../utils/utils");
 
 const link = process.env.BASE_LINK;
 
@@ -33,7 +32,7 @@ router.get('/', (async (req, res, next) => {
                         code: doc.code,
                         price: doc.price,
                         oldPrice: doc.oldPrice,
-                        thumbnail: doc.thumbnail,
+                        thumbnail: link + doc.thumbnail,
                         url: link + "products/" + doc._id
                     }
                 })
@@ -55,17 +54,20 @@ router.get('/:id', ((req, res, next) => {
         .exec()
         .then(doc => {
             if (doc) {
+                let images0 = doc.images.map( i=> {
+                    return {src: link + i.path};
+                });
                 const response = {
                     _id: doc._id,
                     name: doc.name,
                     code: doc.code,
                     price: doc.price,
                     oldPrice: doc.oldPrice,
-                    images: doc.images,
+                    images: images0,
                     features: doc.features,
                     relatedProducts: doc.relatedProducts,
                     similarProducts: doc.similarProducts,
-                    thumbnail: doc.thumbnail,
+                    thumbnail: link + doc.thumbnail,
                     types: doc.types,
                     url: link + "products/" + doc._id,
                 }
