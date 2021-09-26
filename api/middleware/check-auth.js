@@ -2,7 +2,7 @@ const {getKey} = require("../utils/handlingDat");
 
 module.exports = (req, res, next) => {
     try {
-        console.log(getKey());
+        //console.log(getKey());
         if (req.cookies.data===getKey()) {
             next();
         } else {

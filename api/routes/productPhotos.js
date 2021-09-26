@@ -46,11 +46,10 @@ router.delete('/:id/:photoId/', checkAuth, (req, res, next) => {
         .then(doc => {
             if (doc) {
                 for (let i=0; i<doc.images.length; i++) {
-                    if (doc.images[i]._id===pId) {
-                        fN=doc.images[i].path.split('/').pop();
+                    if (doc.images[i]._id.equals(pId)) {    //  !!!    USE EQUALS, NOT "==="   !!!
+                        deleteFile(doc.images[i].path.split('/').pop());    //  delete by filename
                     }
                 }
-                deleteFile(fN);  //  returns Filename
                 res.status(200).json(
                     {
                         message: "DELETED PHOTO",
