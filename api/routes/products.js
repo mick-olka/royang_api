@@ -55,7 +55,7 @@ router.get('/:id', ((req, res, next) => {
         .then(doc => {
             if (doc) {
                 let images0 = doc.images.map( i=> {
-                    return {src: link + i.path};
+                    return {src: link + i.path, _id: i._id};
                 });
                 const response = {
                     _id: doc._id,

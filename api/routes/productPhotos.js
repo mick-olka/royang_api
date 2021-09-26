@@ -37,19 +37,24 @@ router.post('/:id', checkAuth, upload.single('path'), (req, res, next) => {
         });
 });
 
-router.delete('/:id/:fileName/', checkAuth, (req, res, next) => {
+router.delete('/:id/:photoId/', checkAuth, (req, res, next) => {
     const id = req.params.id;
-    const fN = req.params.fileName;
-    const url = link + 'uploads/' + fN;
-    Product.updateOne({_id: id}, {$pull: {images: {path: 'uploads/' + fN}}}, {multi: true})
+    const pId = req.params.photoId;
+    let fN='';
+    Product.findOneAndUpdate({_id: id}, {$pull: {images: {_id: pId}}}, {multi: true})
         .exec()
         .then(doc => {
             if (doc) {
-                deleteFile(fN);
+                for (let i=0; i<doc.images.length; i++) {
+                    if (doc.images[i]._id===pId) {
+                        fN=doc.images[i].path.split('/').pop();
+                    }
+                }
+                deleteFile(fN);  //  returns Filename
                 res.status(200).json(
                     {
                         message: "DELETED PHOTO",
-                        url: url,
+                        url: link + 'uploads/' + fN,
                         code: 0
                     });
             } else res.status(404).json({error: "Not_Found", code: 1});
