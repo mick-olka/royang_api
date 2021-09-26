@@ -4,6 +4,7 @@ const {selectArgsMinimized} = require('../utils/utils.js');
 
 const Product = require('../models/product.js');
 const {isNumeric} = require("../utils/utils");
+const link = process.env.BASE_LINK;
 
 router.get('/', async (req, res, next)=>{
     let search_string = String(req.query.str);
@@ -24,10 +25,13 @@ router.get('/', async (req, res, next)=>{
         .limit(limit)
         .skip(page * limit)
         .exec()
-        .then(result =>{
+        .then(results =>{
+            for (let i=0; i<results.length; i++) {
+                results[i].thumbnail = link + results[i].thumbnail;
+            }
             let response = {
                 count: count,
-                result: result,
+                result: results,
             }
             res.status(200).json(response);
         })
