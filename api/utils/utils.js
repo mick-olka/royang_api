@@ -35,6 +35,13 @@ exports.upload = multer({
     fileFilter: this.fileFilter
 });
 
+exports.multi_upload = multer({
+    storage: this.storage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+    fileFilter: this.fileFilter,
+});
+
+
 exports.productRef = {
     prodId: {type: Schema.Types.ObjectId, ref: 'Product', required: true}
 };

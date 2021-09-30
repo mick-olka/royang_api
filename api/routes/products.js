@@ -54,16 +54,31 @@ router.get('/:id', ((req, res, next) => {
         .exec()
         .then(doc => {
             if (doc) {
-                let images0 = doc.images.map( i=> {
-                    return {src: link + i.path, _id: i._id};
-                });
+                // for (let i=0; i<item.pathArr.length; i++) {
+                //     pathArr.push(link+item.pathArr[i]);
+                // }
+                // let images0 = doc.images.map(item=>{
+                //     let pathArr = [];
+                //     for (let i=0; i<item.pathArr.length; i++) {
+                //         pathArr.push(link+item.pathArr[i]);
+                //     }
+                //    return {...item, pathArr: pathArr }
+                // });
+                // let images0=[];
+                for (let i=0; i<doc.images.length; i++) {
+                    // let pathArr=[];
+                    for (let t=0; t<doc.images[i].pathArr.length; t++) {
+                        doc.images[i].pathArr[t]=link+doc.images[i].pathArr[t];
+                    }
+                    // images0.push({...doc.images[i], pathArr: pathArr});
+                }
                 const response = {
                     _id: doc._id,
                     name: doc.name,
                     code: doc.code,
                     price: doc.price,
                     oldPrice: doc.oldPrice,
-                    images: images0,
+                    images: doc.images,
                     features: doc.features,
                     relatedProducts: doc.relatedProducts,
                     similarProducts: doc.similarProducts,
@@ -75,7 +90,7 @@ router.get('/:id', ((req, res, next) => {
             } else res.status(404).json({error: "Not_Found"});
         })
         .catch(err => {
-            //console.log(err);
+            console.log(err);
             res.status(500).json({error: err});
         });
 }));
@@ -128,7 +143,9 @@ router.delete('/:id', checkAuth, (req, res, next) => {
             if (doc) {
                 let imgs = doc.images;
                 for (let i = 0; i < imgs.length; i++) {
-                    deleteFile(imgs[i].path.split('/').pop());
+                    for (let t=0; t<imgs[i].pathArr.length; t++) {
+                        deleteFile(imgs[i].pathArr[t].split('/').pop());
+                    }
                 }
                 if (doc.thumbnail) deleteFile(doc.thumbnail.split("/").pop());
                 deleteProduct();

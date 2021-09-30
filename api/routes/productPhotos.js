@@ -6,16 +6,24 @@ const multer = require('multer');   //  needs for fetching form-data
 const checkAuth = require('../middleware/check-auth');
 const Product = require('../models/product.js');
 const Photo = require('../models/photo.js');
-const {deleteFile, upload} = require("../utils/utils");
+const {deleteFile, upload, multi_upload} = require("../utils/utils");
 
 const link = process.env.BASE_LINK;
 
-router.post('/:id', checkAuth, upload.single('path'), (req, res, next) => {
-    console.log(req.file);
+router.post('/:id', multi_upload.array('pathArr', 20), (req, res, next) => {
+    console.log(req.files);
+    // res.status(200).json(
+    //     {
+    //         message: "PUSHED PHOTOS",
+    //         // pathArr: req.files.map(p=>{return link+p}),
+    //         files: req.files,
+    //         code: 0
+    //     });
     const id = req.params.id;
+    let pathArr = req.files.map(f=>{return f.path});
     const img = new Photo({
         _id: new mongoose.Types.ObjectId(),
-        path: req.file.path,
+        pathArr: pathArr,
         mainColor: req.body.mainColor,
         pillColor: req.body.pillColor,
     });
@@ -25,8 +33,8 @@ router.post('/:id', checkAuth, upload.single('path'), (req, res, next) => {
             if (doc) {
                 res.status(200).json(
                     {
-                        message: "PUSHED PHOTO",
-                        url: link + req.file.path,
+                        message: "PUSHED PHOTOS",
+                        files: req.files,
                         code: 0
                     });
             } else res.status(404).json({error: "Not_Found", code: 1});
@@ -37,9 +45,9 @@ router.post('/:id', checkAuth, upload.single('path'), (req, res, next) => {
         });
 });
 
-router.delete('/:id/:photoId/', checkAuth, (req, res, next) => {
+router.delete('/:id/:photosId/', checkAuth, (req, res, next) => {
     const id = req.params.id;
-    const pId = req.params.photoId;
+    const pId = req.params.photosId;
     let fN='';
     Product.findOneAndUpdate({_id: id}, {$pull: {images: {_id: pId}}}, {multi: true})
         .exec()
@@ -47,13 +55,15 @@ router.delete('/:id/:photoId/', checkAuth, (req, res, next) => {
             if (doc) {
                 for (let i=0; i<doc.images.length; i++) {
                     if (doc.images[i]._id.equals(pId)) {    //  !!!    USE EQUALS, NOT "==="   !!!
-                        deleteFile(doc.images[i].path.split('/').pop());    //  delete by filename
+                        for (let t=0; t<doc.images[i].pathArr.length; t++) {
+                            deleteFile(doc.images[i].pathArr[t].split('/').pop());    //  delete by filename
+                        }
                     }
                 }
                 res.status(200).json(
                     {
-                        message: "DELETED PHOTO",
-                        url: link + 'uploads/' + fN,
+                        message: "DELETED PHOTOS",
+                        // pathArr: doc.im link + 'uploads/' + fN,
                         code: 0
                     });
             } else res.status(404).json({error: "Not_Found", code: 1});

@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const {productRef} = require("../utils/utils");
 
 const productSchema = mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
@@ -11,7 +10,8 @@ const productSchema = mongoose.Schema({
     images: [
         {
             _id: mongoose.Schema.Types.ObjectId,
-            path: String,
+            //path: String,
+            pathArr: [String],
             mainColor: String,
             pillColor: String
         }

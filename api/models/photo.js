@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const photoSchema = mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
-    path: { type: String, required: true },
+    pathArr: [{ type: String, required: true }],
     mainColor: { type: String, required: true },
     pillColor: { type: String, required: true },
 });
