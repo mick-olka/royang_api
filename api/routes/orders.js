@@ -7,9 +7,22 @@ const checkAuth = require('../middleware/check-auth');
 
 const link = process.env.BASE_LINK;
 const {selectArgsMinimized, selectArgsExtended} = require('../utils/utils.js');
+const {handleIP} = require("../utils/hanpleIPs");
 
 const selectOrderArgsMinimized="_id name phone status date";
 const selectOrderArgsExtended="_id name phone message cart sum status date";
+
+const { Telegraf } = require('telegraf')
+
+const bot = new Telegraf(process.env.BOT_TOKEN)
+
+let chatId=null;
+bot.start((ctx) => {ctx.reply('Welcome'); if (chatId==null) chatId=ctx.message.chat.id});
+bot.launch();
+
+// Enable graceful stop
+process.once('SIGINT', () => bot.stop('SIGINT'))
+process.once('SIGTERM', () => bot.stop('SIGTERM'))
 
 router.get('/', checkAuth, (async (req, res, next) => {
     let page = Number(req.query.page)-1;
@@ -53,6 +66,7 @@ router.get('/:_id', checkAuth, ((req, res, next) => {
         .exec()
         .then(doc => {
             if (doc) {
+
                 const response = {
                     _id: doc._id,
                     name: doc.name,
@@ -72,7 +86,8 @@ router.get('/:_id', checkAuth, ((req, res, next) => {
         });
 }));
 
-router.post('/', (req, res, next) => {
+router.post('/', async (req, res, next) => {
+    let didIpSendToManyReq = handleIP(req.ip, 2);
     const order = new Order({
         _id: new mongoose.Types.ObjectId(),
         name: req.body.name,
@@ -81,11 +96,22 @@ router.post('/', (req, res, next) => {
         cart: req.body.cart,
         sum: req.body.sum,
         status: "waiting",
-        date: Date.now()+1000*60*60*3,
+        date: Date.now() + 1000 * 60 * 60 * 3,
     });
-    order.save().then(result => {
+    let cartText = "";
+    for (let i=0; i<order.cart.length; i++) {
+        let cartItemText=`# ${req.body.cart[i].name} ${order.cart[i].count} шт. MC: ${order.cart[i].mainColor} PC: ${order.cart[i].pillColor}`;
+        cartText=cartText+`\n${cartItemText}`;
+    }
+    let tgMsg = `New Order\n\n${order.name}\n${order.phone}\n msg: ${order.message}\n sum: ${order.sum}\n${cartText}`;
+
+    if (didIpSendToManyReq === 1) {
+        res.status(429).json({msg: "Too Many Orders", code: 1});
+    } else {
+        if (chatId) await bot.telegram.sendMessage(chatId, tgMsg);  //
+        order.save().then(result => {
         res.status(201).json({
-            message: "CREATED",
+            message: "ORDER CREATED",
             result: {
                 _id: result._id,
                 name: result.name,
@@ -98,6 +124,7 @@ router.post('/', (req, res, next) => {
             console.log(err);
             res.status(500).json({error: err, code: 1});
         });
+}
 });
 
 router.delete('/:_id', checkAuth, (req, res, next) => {

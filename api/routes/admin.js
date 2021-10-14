@@ -50,7 +50,7 @@ router.post('/login', (req, res, next) => {
                 res.cookie(`data`, getKey(), {
                     maxAge: 24 * 60 * 60 * 1000, // 24 hours,
                     //secure: true,
-                    //httpOnly: true,
+                    httpOnly: true,
                     //sameSite: 'lax'
                 });
                 res.status(200).json({ msg: "SUCCESS", code: 0 });

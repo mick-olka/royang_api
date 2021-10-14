@@ -9,7 +9,8 @@ const orderSchema = mongoose.Schema({
         product: {type: mongoose.Schema.Types.ObjectId, ref: 'Product'},
         mainColor:{type: String, required: true},
         pillColor:{type: String, required: true},
-        count: {type: Number, required: true}
+        count: {type: Number, required: true},
+        photo: {type: String, required: false}
     }],
     sum: {type: Number, required: true},
     status: {type: String, required: true}, //  waiting - processing - canceled - done

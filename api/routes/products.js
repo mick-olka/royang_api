@@ -7,10 +7,13 @@ const checkAuth = require('../middleware/check-auth');
 const multer = require('multer');   //
 
 const Product = require('../models/product.js');
+//const {handleIP} = require("../utils/hanpleIPs");
 
 const link = process.env.BASE_LINK;
 
 router.get('/', (async (req, res, next) => {
+    //console.log(req.ip);
+    //console.log(handleIP(req.ip, 2));
     let page = Number(req.query.page)-1;
     let limit = Number(req.query.limit);
     let count = 0;

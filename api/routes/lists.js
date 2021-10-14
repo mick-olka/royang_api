@@ -34,16 +34,26 @@ router.get('/', ((req, res, next) => {
 
 router.get('/:url', ((req, res, next) => {
     const url = req.params.url;
+    let page = Number(req.query.page)-1;
+    let limit = Number(req.query.limit);
     List.findOne({url: url})
         .select(selectArgsExtended)
         .populate({path: 'items', select: selectArgsMinimized})
         .exec()
         .then(doc => {
             if (doc) {
+                let items0 = [];
+                for (let i=page*limit; i<page*limit+limit; i++) {
+                    if (doc.items[i]) {
+                        doc.items[i].thumbnail = link + doc.items[i].thumbnail;
+                        items0.push(doc.items[i]);
+                    }
+                }
                 const response = {
                     _id: doc._id,
                     name: doc.name,
-                    items: doc.items,
+                    items: items0,
+                    count: doc.items.length,
                     url: doc.url,
                 }
                 res.status(200).json(response);
