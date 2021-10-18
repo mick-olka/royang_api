@@ -57,23 +57,18 @@ router.get('/:id', ((req, res, next) => {
         .exec()
         .then(doc => {
             if (doc) {
-                // for (let i=0; i<item.pathArr.length; i++) {
-                //     pathArr.push(link+item.pathArr[i]);
-                // }
-                // let images0 = doc.images.map(item=>{
-                //     let pathArr = [];
-                //     for (let i=0; i<item.pathArr.length; i++) {
-                //         pathArr.push(link+item.pathArr[i]);
-                //     }
-                //    return {...item, pathArr: pathArr }
-                // });
-                // let images0=[];
+
+                for (let i=0; i<doc.relatedProducts.length; i++) {
+                    doc.relatedProducts[i].thumbnail=link+doc.relatedProducts[i].thumbnail;
+                }
+                for (let i=0; i<doc.similarProducts.length; i++) {
+                    doc.similarProducts[i].thumbnail=link+doc.similarProducts[i].thumbnail;
+                }
+
                 for (let i=0; i<doc.images.length; i++) {
-                    // let pathArr=[];
                     for (let t=0; t<doc.images[i].pathArr.length; t++) {
                         doc.images[i].pathArr[t]=link+doc.images[i].pathArr[t];
                     }
-                    // images0.push({...doc.images[i], pathArr: pathArr});
                 }
                 const response = {
                     _id: doc._id,
@@ -103,7 +98,7 @@ router.post('/', checkAuth, (req, res, next) => {
         _id: new mongoose.Types.ObjectId(),
         name: req.body.name,
         price: req.body.price,
-        oldPrice: req.oldPrice,
+        oldPrice: req.body.oldPrice,
         code: req.body.code,
         features: req.body.features,
         images: [],

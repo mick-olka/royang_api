@@ -5,6 +5,7 @@ const productSchema = mongoose.Schema({
     name: {type: String, required: true},
     code: {type: String, required: false},
     price: {type: Number, required: true},
+    oldPrice: {type: Number, required: false},
     thumbnail: {type: String, required: false},
     features: [{key: {type: String, required: true}, value: {type: String, required: true}}],
     images: [
@@ -19,7 +20,6 @@ const productSchema = mongoose.Schema({
     relatedProducts: [{type: mongoose.Schema.Types.ObjectId, ref: 'Product'}],
     similarProducts: [{type: mongoose.Schema.Types.ObjectId, ref: 'Product'}],
     types: [],
-    oldPrice: {type: Number, required: false},
     //otherFeatures: [],
 });
 
