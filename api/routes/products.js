@@ -20,7 +20,7 @@ router.get('/', (async (req, res, next) => {
     await Product.countDocuments({}, function(err, c) {
         count=c;
     });
-    Product.find()
+    Product.find().sort({index: -1})
         .select(selectArgsMinimized)
         .limit(limit)
         .skip(page * limit)
@@ -77,6 +77,7 @@ router.get('/:id', ((req, res, next) => {
                     price: doc.price,
                     oldPrice: doc.oldPrice,
                     images: doc.images,
+                    index: doc.index,
                     features: doc.features,
                     relatedProducts: doc.relatedProducts,
                     similarProducts: doc.similarProducts,

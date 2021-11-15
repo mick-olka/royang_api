@@ -21,6 +21,7 @@ const productSchema = mongoose.Schema({
     similarProducts: [{type: mongoose.Schema.Types.ObjectId, ref: 'Product'}],
     types: [],
     //otherFeatures: [],
+    index: {type: Number, required: false},
 });
 
 module.exports = mongoose.model('Product', productSchema);

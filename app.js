@@ -14,6 +14,7 @@ const loginRoutes = require('./api/routes/admin');
 const searchRoutes = require('./api/routes/search');
 const orderRoutes = require('./api/routes/orders');
 const sliderRoutes = require('./api/routes/slider');
+const textRoutes = require('./api/routes/text_blocks');
 let getCount=0;
 
 mongoose.connect("mongodb+srv://mick:1234qwer@cluster0.za5fi.mongodb.net/Shop?retryWrites=true&w=majority",
@@ -27,6 +28,7 @@ mongoose.connect("mongodb+srv://mick:1234qwer@cluster0.za5fi.mongodb.net/Shop?re
 app.use(cookies());
 app.use(morgan('dev')); //  dev
 app.use('/uploads', express.static('uploads'));
+app.use('/res', express.static('res'));
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 
@@ -36,6 +38,8 @@ app.use((req, res, next) => {
         'http://192.168.1.163:3000',
         'http://192.168.1.24:3000',
         'http://localhost:3000',
+        'http://192.168.1.243:3000',
+        'http://178.54.240.228:3690',
     ];
     const origin=req.headers.origin;
     if  (corsWhiteList.includes(origin)) {
@@ -70,6 +74,7 @@ app.use('/admin', loginRoutes);
 app.use('/search', searchRoutes);
 app.use('/orders', orderRoutes);
 app.use('/slider', sliderRoutes);
+app.use('/text', textRoutes);
 
 app.use((req, res, next) => {
     const error = new Error('Not Found');
@@ -87,5 +92,17 @@ app.use((error, req, res, next) => {
 // readDat();  //
 // writeDat("egfywu");
 // readDat();
+//
+// fs.readdir(dirPath, ()=> {
+//
+//    if (err) {
+//        return console.log('Unable to scan dir: '+err);
+//    }
+//
+//    files.forEach(file=>{
+//        console.log(file);
+//    })
+//
+// });
 
 module.exports = app;

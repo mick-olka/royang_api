@@ -88,26 +88,33 @@ router.delete('/:id', checkAuth, (req, res, next) => {
         });
 });
 
-// router.patch('/:id', checkAuth, (req, res, next) => {
-//     const id = req.params.id;
-//     const updateOps = {};
-//     for (let [key, value] of Object.entries(req.body)) {
-//         updateOps[key] = value;
-//     }
-//     Slide.findOneAndUpdate({_id: id}, {$set: updateOps}, {returnOriginal: false},)
-//         .exec()
-//         .then(doc => {
-//             if (doc) {
-//                 res.status(200).json({
-//                     message: "SLIDE UPDATED",
-//                     updatedData: updateOps,
-//                     code: 0,
-//                 });
-//             } else res.status(404).json({error: "Not_Found", code: 1});
-//         })
-//         .catch(err => {
-//             res.status(500).json({error: err, code: 1});
-//         });
-// });
+router.patch('/:id', checkAuth, upload.single('img'), (req, res, next) => {
+    const id = req.params.id;
+    const updateOps = {};
+    for (let [key, value] of Object.entries(req.body)) {
+        updateOps[key] = value;
+    }
+    if (req.file) {
+        updateOps.img=req.file.path;
+    }
+    Slide.findOneAndUpdate({_id: id}, {$set: updateOps}, {returnOriginal: true})
+        .exec()
+        .then(doc => {
+            if (doc) {
+                if (req.file && doc.img) {
+                    deleteFile(doc.img.split('/').pop());
+                }
+                res.status(200).json({
+                    prev: doc,
+                    message: "SLIDE UPDATED",
+                    updatedData: updateOps,
+                    code: 0,
+                });
+            } else res.status(404).json({error: "Not_Found", code: 1});
+        })
+        .catch(err => {
+            res.status(500).json({error: err, code: 1});
+        });
+});
 
 module.exports = router;

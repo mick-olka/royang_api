@@ -10,6 +10,10 @@ const {deleteFile, upload, multi_upload} = require("../utils/utils");
 
 const link = process.env.BASE_LINK;
 
+const path = require('path');
+const fs = require('fs');
+// const dirPath = path.join(__dirname, 'res/gallery');
+
 router.post('/:id', multi_upload.array('pathArr', 20), (req, res, next) => {
     console.log(req.files);
     // res.status(200).json(
@@ -105,5 +109,34 @@ router.post('/thumbnail/:id', upload.single('thumbnail'), checkAuth, (req, res, 
         });
 
 });
+
+router.get('/gallery', (async (req, res, next) => {
+
+    fs.readdir("res/gallery", (err, files)=> {
+        if (err) {
+            res.status(500).json({error: err});
+            return console.log('Unable to scan dir: '+err);
+        }
+        let readyFiles = files.map(file=>{
+            return link+"res/gallery/"+file;
+        });
+        res.status(200).json(readyFiles);
+    });
+}));
+
+router.get('/colors', (async (req, res, next) => {
+
+    fs.readdir("res/colors", (err, files)=> {
+        if (err) {
+            res.status(500).json({error: err});
+            return console.log('Unable to scan dir: '+err);
+        }
+        let readyFiles = files.map(file=>{
+            // readyFiles[file.split('.')[0]] = link+"res/gallery/"+file;
+            return {name: file.split('.')[0], src: link+"res/colors/"+file}
+        });
+        res.status(200).json(readyFiles);
+    });
+}));
 
 module.exports = router;

@@ -6,6 +6,7 @@ const slideSchema = mongoose.Schema({
     lower_text: {type: String, required: false},
     nav_link: {type: String, required: false},
     img: {type: String, required: false},
+    index: {type: Number, required: true, default: 0},
 });
 
 module.exports = mongoose.model('Slide', slideSchema);
