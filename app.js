@@ -17,7 +17,7 @@ const sliderRoutes = require('./api/routes/slider');
 const textRoutes = require('./api/routes/text_blocks');
 let getCount=0;
 
-mongoose.connect("mongodb+srv://mick:1234qwer@cluster0.za5fi.mongodb.net/Shop?retryWrites=true&w=majority",
+mongoose.connect(process.env.MON_URI,
     {
         useNewUrlParser: true,
         useUnifiedTopology: true,

@@ -79,6 +79,7 @@ router.get('/:id', ((req, res, next) => {
                     images: doc.images,
                     index: doc.index,
                     features: doc.features,
+                    description: doc.description,
                     relatedProducts: doc.relatedProducts,
                     similarProducts: doc.similarProducts,
                     thumbnail: link + doc.thumbnail,
@@ -161,7 +162,7 @@ router.patch('/:id', checkAuth, (req, res, next) => {
 
     const updateOps = {};
     for (let [key, value] of Object.entries(req.body)) {
-        updateOps[key] = value;
+            updateOps[key] = value;
     }
 
     Product.findOneAndUpdate({_id: id}, {$set: updateOps}, {returnOriginal: false},)

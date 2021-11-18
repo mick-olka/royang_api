@@ -7,11 +7,11 @@ const productSchema = mongoose.Schema({
     price: {type: Number, required: true},
     oldPrice: {type: Number, required: false},
     thumbnail: {type: String, required: false},
+    description: {type: String, required: false},
     features: [{key: {type: String, required: true}, value: {type: String, required: true}}],
     images: [
         {
             _id: mongoose.Schema.Types.ObjectId,
-            //path: String,
             pathArr: [String],
             mainColor: String,
             pillColor: String
