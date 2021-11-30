@@ -6,12 +6,12 @@ const List = require('../models/list.js');
 const checkAuth = require('../middleware/check-auth');
 
 const link = process.env.BASE_LINK;
-const {selectArgsMinimized, selectArgsExtended} = require("../utils/utils");
+const {selectArgsMinimized} = require("../utils/utils");
 
 router.get('/', ((req, res, next) => {
 
-    List.find()
-        .select(selectArgsMinimized)
+    List.find().sort({index: -1})
+        .select("_id name url index")
         .exec()
         .then(docs => {
             const response = {
@@ -21,6 +21,7 @@ router.get('/', ((req, res, next) => {
                         _id: doc._id,
                         name: doc.name,
                         url: doc.url,
+                        index: doc.index,
                     }
                 })
             }
@@ -37,7 +38,7 @@ router.get('/:url', ((req, res, next) => {
     let page = Number(req.query.page)-1;
     let limit = Number(req.query.limit);
     List.findOne({url: url})
-        .select(selectArgsExtended)
+        .select("_id name url index items")
         .populate({path: 'items', select: selectArgsMinimized})
         .exec()
         .then(doc => {
@@ -53,6 +54,7 @@ router.get('/:url', ((req, res, next) => {
                     _id: doc._id,
                     name: doc.name,
                     items: items0,
+                    index: doc.index,
                     count: doc.items.length,
                     url: doc.url,
                 }
@@ -71,6 +73,7 @@ router.post('/', checkAuth, (req, res, next) => {
         name: req.body.name,
         items: [],
         url: req.body.url,
+        index: req.body.index,
     });
     product.save().then(result => {
         res.status(201).json({
@@ -79,6 +82,7 @@ router.post('/', checkAuth, (req, res, next) => {
                 _id: result._id,
                 name: result.name,
                 url: result.url,
+                index: result.index,
             },
             code: 0,
         });
@@ -105,7 +109,7 @@ router.delete('/:url', checkAuth, (req, res, next) => {
         });
 
     List.findOne({url: url})
-        .select(selectArgsExtended)
+        .select("_id name url index")
         .exec()
         .then(doc => {
             if (doc) {

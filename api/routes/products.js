@@ -103,6 +103,7 @@ router.post('/', checkAuth, (req, res, next) => {
         oldPrice: req.body.oldPrice,
         code: req.body.code,
         features: req.body.features,
+        description: req.body.description,
         images: [],
         relatedProducts: [],
         similarProducts: [],

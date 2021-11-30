@@ -7,8 +7,8 @@ const orderSchema = mongoose.Schema({
     message: {type: String, required: false},
     cart: [{
         product: {type: mongoose.Schema.Types.ObjectId, ref: 'Product'},
-        mainColor:{type: String, required: true},
-        pillColor:{type: String, required: true},
+        mainColor:{type: String, required: false},
+        pillColor:{type: String, required: false},
         count: {type: Number, required: true},
         photo: {type: String, required: false}
     }],

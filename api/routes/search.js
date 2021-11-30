@@ -11,8 +11,8 @@ router.get('/', async (req, res, next)=>{
     let page = Number(req.query.page)-1;
     let limit = Number(req.query.limit);
     let count = 0;
-    console.log(search_string);
-    const regex = new RegExp(search_string, 'i') // i for case insensitive
+    let search_words = search_string.split(' ').join('|');
+    const regex = new RegExp(search_words, 'i') // i for case insensitive
     let filter = {name: {$regex: regex} };
     if (isNumeric(search_string)) filter = {code: {$regex: regex}};
 

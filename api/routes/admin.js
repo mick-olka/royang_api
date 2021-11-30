@@ -34,24 +34,18 @@ router.post('/login/pw', async (req, res) => {
 
 router.post('/login', (req, res, next) => {
     let dat = readDat();
-    //console.log(dat);
     let rightPW = false;
     bcrypt.compare(req.body.data, dat, (err, result) => {
-        //console.log(result);
         rightPW = result;
-
-        if (err) {
-            res.status(500).json({ err: err, code: -1 });
-        } else {
-
-            //console.log("RP: " + rightPW);
+        if (err) res.status(500).json({ err: err, code: -1 });
+        else {
             if (rightPW) {
                 setKey(Math.random().toString(36).slice(-8));
                 res.cookie(`data`, getKey(), {
                     maxAge: 24 * 60 * 60 * 1000, // 24 hours,
-                    //secure: true,
+                    // secure: true,
                     httpOnly: true,
-                    //sameSite: 'lax'
+                    // sameSite: 'lax'
                 });
                 res.status(200).json({ msg: "SUCCESS", code: 0 });
             } else {
