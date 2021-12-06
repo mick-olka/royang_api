@@ -104,6 +104,7 @@ router.post('/', checkAuth, (req, res, next) => {
         code: req.body.code,
         features: req.body.features,
         description: req.body.description,
+        index: req.body.index,
         images: [],
         relatedProducts: [],
         similarProducts: [],
