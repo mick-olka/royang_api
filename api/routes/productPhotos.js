@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const multer = require('multer');   //  needs for fetching form-data
+const jimp = require("jimp");
 
 const checkAuth = require('../middleware/check-auth');
 const Product = require('../models/product.js');
@@ -9,22 +10,44 @@ const Photo = require('../models/photo.js');
 const {deleteFile, upload, multi_upload} = require("../utils/utils");
 
 const link = process.env.BASE_LINK;
+let watermark;
 
 const path = require('path');
 const fs = require('fs');
 // const dirPath = path.join(__dirname, 'res/gallery');
 
+const process_photos = (files, max_size) => {
+
+    for (let i=0; i<files.length; i++) {
+        jimp.read(files[i].path, (err, img) => {
+            if (err) throw err;
+            else {
+                img.scaleToFit(max_size, max_size) // resize
+                    .quality(72) // set JPEG quality
+                let w= img.getWidth(), h=img.getHeight();
+                watermark.scaleToFit(w-100, 500);
+                // .greyscale() // set greyscale
+                img.composite( watermark, 50, h/2-145 )
+                    .write(files[i].path); // save
+            }
+        });
+    }
+
+}
+
+jimp.read(path.resolve(__dirname, "../../res", "watermark1.png"))
+    .then(image => {
+        watermark=image;
+    })
+    .catch(err => {
+        console.log(err);
+    });
+
 router.post('/:id', multi_upload.array('pathArr', 20), (req, res, next) => {
-    console.log(req.files);
-    // res.status(200).json(
-    //     {
-    //         message: "PUSHED PHOTOS",
-    //         // pathArr: req.files.map(p=>{return link+p}),
-    //         files: req.files,
-    //         code: 0
-    //     });
+    // console.log(req.files);
     const id = req.params.id;
     let pathArr = req.files.map(f=>{return f.path});
+    process_photos(req.files, 1200);
     const img = new Photo({
         _id: new mongoose.Types.ObjectId(),
         pathArr: pathArr,
@@ -78,8 +101,9 @@ router.delete('/:id/:photosId/', checkAuth, (req, res, next) => {
         });
 });
 
-router.post('/thumbnail/:id', upload.single('thumbnail'), checkAuth, (req, res, next) => {
+router.post('/thumbnail/:id', checkAuth, upload.single('thumbnail'), (req, res, next) => {
     const id = req.params.id;
+    process_photos(req.file, 240);
     const findAndUpdate = () => {
         Product.findOneAndUpdate({_id: id}, {$set: {thumbnail: req.file.path}}, {returnOriginal: false},)
             .exec()

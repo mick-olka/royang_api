@@ -6,7 +6,7 @@ const checkAuth = require('../middleware/check-auth');
 const {setKey} = require('../utils/handlingDat')
 
 router.get('/login/check', (req, res) => {
-    console.log(getKey());
+    console.log(req.cookies);
     if (req.cookies.data === getKey()) {
         res.status(200).json({ msg: "SUCCESS", code: 0 });
     } else {

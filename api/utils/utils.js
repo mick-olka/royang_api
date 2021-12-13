@@ -3,6 +3,15 @@ const multer = require('multer');   //
 const fs = require('fs');
 const {Schema} = require("mongoose");
 
+const checkFileName = (fName) => {
+    let fn =fName;
+    fn=fn.split(":").join("-");
+    while (fs.existsSync("uploads/"+fn)) {
+        fn=fn.split(".").join("0.");
+    }
+    return fn;
+}
+
 exports.deleteFile = (fName) => {
     if (fs.existsSync("uploads/"+fName)) {
         fs.unlinkSync("uploads/"+fName)
@@ -15,7 +24,7 @@ exports.storage = multer.diskStorage({
         cb(null, './uploads');
     },
     filename: function (req, file, cb) {
-        cb(null, new Date().toISOString() + file.originalname);
+        cb(null, checkFileName(file.originalname));
     }
 });
 
