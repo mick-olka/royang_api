@@ -45,7 +45,7 @@ router.post('/login', (req, res, next) => {
                     maxAge: 24 * 60 * 60 * 1000, // 24 hours,
                     // secure: true,
                     httpOnly: true,
-                    // sameSite: 'lax'
+                    sameSite: 'lax'
                 });
                 res.status(200).json({ msg: "SUCCESS", code: 0 });
             } else {
