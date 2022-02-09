@@ -3,8 +3,7 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const {deleteFile, selectArgsMinimized, selectArgsExtended} = require('../utils/utils.js');
 const checkAuth = require('../middleware/check-auth');
-
-const multer = require('multer');   //
+const cyrillicToTranslit = require('cyrillic-to-translit-js');
 
 const Product = require('../models/product.js');
 //const {handleIP} = require("../utils/hanpleIPs");
@@ -12,8 +11,6 @@ const Product = require('../models/product.js');
 const link = process.env.BASE_LINK;
 
 router.get('/', (async (req, res, next) => {
-    //console.log(req.ip);
-    //console.log(handleIP(req.ip, 2));
     let page = Number(req.query.page)-1;
     let limit = Number(req.query.limit);
     let count = 0;
@@ -31,12 +28,13 @@ router.get('/', (async (req, res, next) => {
                 products: docs.map(doc => {
                     return {
                         _id: doc._id,
+                        url_name: doc.url_name,
                         name: doc.name,
                         code: doc.code,
-                        price: doc.price,
-                        oldPrice: doc.oldPrice,
-                        thumbnail: link + doc.thumbnail,
-                        url: link + "products/" + doc._id
+                        price: doc.price * 28,
+                        oldPrice: doc.oldPrice * 28 || 0,
+                        thumbnail: doc.thumbnail && doc.thumbnail[0]!=="h"? link + doc.thumbnail : doc.thumbnail,
+                        url: link + "products/" + doc.url_name
                     }
                 })
             }
@@ -48,12 +46,12 @@ router.get('/', (async (req, res, next) => {
         });
 }));
 
-router.get('/:id', ((req, res, next) => {
-    const id = req.params.id;
-    Product.findById(id)
+router.get('/:url_name', ((req, res, next) => {
+    const url_name = req.params.url_name;
+    Product.findOne({url_name: {$regex: url_name} })
         .select(selectArgsExtended)
-        .populate({path: 'relatedProducts', select: '_id name code price thumbnail'})
-        .populate({path: 'similarProducts', select: '_id name code price thumbnail'})
+        .populate({path: 'relatedProducts', select: '_id url_name name code price thumbnail'})
+        .populate({path: 'similarProducts', select: '_id url_name name code price thumbnail'})
         .exec()
         .then(doc => {
             if (doc) {
@@ -72,6 +70,7 @@ router.get('/:id', ((req, res, next) => {
                 }
                 const response = {
                     _id: doc._id,
+                    url_name: doc.url_name,
                     name: doc.name,
                     code: doc.code,
                     price: doc.price,
@@ -82,7 +81,7 @@ router.get('/:id', ((req, res, next) => {
                     description: doc.description,
                     relatedProducts: doc.relatedProducts,
                     similarProducts: doc.similarProducts,
-                    thumbnail: link + doc.thumbnail,
+                    thumbnail: doc.thumbnail && doc.thumbnail[0]!=="h"? link + doc.thumbnail : doc.thumbnail,
                     types: doc.types,
                     url: link + "products/" + doc._id,
                 }
@@ -95,22 +94,23 @@ router.get('/:id', ((req, res, next) => {
         });
 }));
 
-router.post('/', checkAuth, (req, res, next) => {
+router.post('/', (req, res, next) => {
     const product = new Product({
         _id: new mongoose.Types.ObjectId(),
         name: req.body.name,
+        url_name: req.body.url_name==="" ? cyrillicToTranslit().transform(req.body.name, "_") : req.body.url_name,
         price: req.body.price,
         oldPrice: req.body.oldPrice,
         code: req.body.code,
         features: req.body.features,
         description: req.body.description,
-        index: req.body.index,
+        index: req.body.index || 1,
+        thumbnail: req.body.thumbnail || null,
         images: [],
         relatedProducts: [],
         similarProducts: [],
     });
     product.save().then(result => {
-        console.log(result);
         res.status(201).json({
             message: "CREATED",
             code: 0,

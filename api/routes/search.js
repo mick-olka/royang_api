@@ -27,7 +27,7 @@ router.get('/', async (req, res, next)=>{
         .exec()
         .then(results =>{
             for (let i=0; i<results.length; i++) {
-                results[i].thumbnail = link + results[i].thumbnail;
+                results[i].thumbnail = results[i].thumbnail && results[i].thumbnail[0]!=="h"? link + results[i].thumbnail : results[i].thumbnail;
             }
             let response = {
                 count: count,

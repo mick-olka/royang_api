@@ -59,6 +59,6 @@ exports.isNumeric=(value)=> {
     return /^\d+$/.test(value);
 }
 
-exports.selectArgsMinimized = "_id name code price oldPrice thumbnail url";
-exports.selectArgsExtended = "_id name code price oldPrice thumbnail description features images relatedProducts similarProducts types index";
+exports.selectArgsMinimized = "_id name code price oldPrice thumbnail url url_name";
+exports.selectArgsExtended = "_id url_name name code price oldPrice thumbnail description features images relatedProducts similarProducts types index";
 
