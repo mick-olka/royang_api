@@ -9,7 +9,7 @@ const link = process.env.BASE_LINK;
 const {selectArgsMinimized} = require("../utils/utils");
 
 router.get('/', ((req, res, next) => {
-
+    const locale = req.query.locale || "ua";
     List.find().sort({index: -1})
         .select("_id name url index")
         .exec()
@@ -19,7 +19,7 @@ router.get('/', ((req, res, next) => {
                 lists: docs.map(doc => {
                     return {
                         _id: doc._id,
-                        name: doc.name,
+                        name: doc.name[locale],
                         url: doc.url,
                         index: doc.index,
                     }
@@ -35,6 +35,7 @@ router.get('/', ((req, res, next) => {
 
 router.get('/:url', ((req, res, next) => {
     const url = req.params.url;
+    const locale = req.query.locale || "ua";
     let page = Number(req.query.page)-1;
     let limit = Number(req.query.limit);
     List.findOne({url: url})
@@ -46,13 +47,13 @@ router.get('/:url', ((req, res, next) => {
                 let items0 = [];
                 for (let i=page*limit; i<page*limit+limit; i++) {
                     if (doc.items[i]) {
-                        doc.items[i].thumbnail = link + doc.items[i].thumbnail;
+                        if (doc_items[i].thumbnail) doc_items[i].thumbnail[0]!=="h"? link + doc_items[i].thumbnail : doc_items[i].thumbnail;
                         items0.push(doc.items[i]);
                     }
                 }
                 const response = {
                     _id: doc._id,
-                    name: doc.name,
+                    name: doc.name[locale],
                     items: items0,
                     index: doc.index,
                     count: doc.items.length,

@@ -13,6 +13,7 @@ const link = process.env.BASE_LINK;
 router.get('/', (async (req, res, next) => {
     let page = Number(req.query.page)-1;
     let limit = Number(req.query.limit);
+    let locale = req.query.locale || "ua";
     let count = 0;
     await Product.countDocuments({}, function(err, c) {
         count=c;
@@ -29,7 +30,7 @@ router.get('/', (async (req, res, next) => {
                     return {
                         _id: doc._id,
                         url_name: doc.url_name,
-                        name: doc.name,
+                        name: doc.name[locale],
                         code: doc.code,
                         price: doc.price * 28,
                         oldPrice: doc.oldPrice * 28 || 0,
@@ -48,6 +49,7 @@ router.get('/', (async (req, res, next) => {
 
 router.get('/:url_name', ((req, res, next) => {
     const url_name = req.params.url_name;
+    let locale = req.query.locale || "ua";
     Product.findOne({url_name: {$regex: url_name} })
         .select(selectArgsExtended)
         .populate({path: 'relatedProducts', select: '_id url_name name code price thumbnail'})
@@ -71,20 +73,26 @@ router.get('/:url_name', ((req, res, next) => {
                 const response = {
                     _id: doc._id,
                     url_name: doc.url_name,
-                    name: doc.name,
+                    name: doc.name[locale],
                     code: doc.code,
                     price: doc.price,
                     oldPrice: doc.oldPrice,
                     images: doc.images,
                     index: doc.index,
                     features: doc.features,
-                    description: doc.description,
+                    description: doc.description[locale],
                     relatedProducts: doc.relatedProducts,
                     similarProducts: doc.similarProducts,
                     thumbnail: doc.thumbnail && doc.thumbnail[0]!=="h"? link + doc.thumbnail : doc.thumbnail,
                     types: doc.types,
                     url: link + "products/" + doc._id,
                 }
+                response.features = response.features.map(f=>{
+                    return f[locale];
+                });
+                response.images = response.images.map(i=>{
+                    return {...i, mainColor: i.mainColor[locale], pillColor: i.pillColor[locale]};
+                });
                 res.status(200).json(response);
             } else res.status(404).json({error: "Not_Found"});
         })
@@ -159,9 +167,8 @@ router.delete('/:id', checkAuth, (req, res, next) => {
         });
 });
 
-router.patch('/:id', checkAuth, (req, res, next) => {
+router.patch('/:id', (req, res, next) => {
     const id = req.params.id;
-
     const updateOps = {};
     for (let [key, value] of Object.entries(req.body)) {
             updateOps[key] = value;

@@ -10,10 +10,11 @@ router.get('/', async (req, res, next)=>{
     let search_string = String(req.query.str);
     let page = Number(req.query.page)-1;
     let limit = Number(req.query.limit);
+    let locale = req.query.locale;
     let count = 0;
     let search_words = search_string.split(' ').join('|');
     const regex = new RegExp(search_words, 'i') // i for case insensitive
-    let filter = {name: {$regex: regex} };
+    let filter = {name:{ [locale]: {$regex: regex} } };
     if (isNumeric(search_string)) filter = {code: {$regex: regex}};
 
     await Product.countDocuments(filter, function(err, c) {
