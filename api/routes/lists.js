@@ -10,6 +10,7 @@ const {selectArgsMinimized} = require("../utils/utils");
 
 router.get('/', ((req, res, next) => {
     const locale = req.query.locale || "ua";
+    let isAdmin = req.query.isAdmin;
     List.find().sort({index: -1})
         .select("_id name url index")
         .exec()
@@ -19,7 +20,7 @@ router.get('/', ((req, res, next) => {
                 lists: docs.map(doc => {
                     return {
                         _id: doc._id,
-                        name: doc.name[locale],
+                        name: isAdmin? doc.name:doc.name[locale],
                         url: doc.url,
                         index: doc.index,
                     }
@@ -38,6 +39,7 @@ router.get('/:url', ((req, res, next) => {
     const locale = req.query.locale || "ua";
     let page = Number(req.query.page)-1;
     let limit = Number(req.query.limit);
+    let isAdmin = req.query.isAdmin;
     List.findOne({url: url})
         .select("_id name url index items")
         .populate({path: 'items', select: selectArgsMinimized})
@@ -53,7 +55,7 @@ router.get('/:url', ((req, res, next) => {
                 }
                 const response = {
                     _id: doc._id,
-                    name: doc.name[locale],
+                    name: isAdmin? doc.name:doc.name[locale],
                     items: items0,
                     index: doc.index,
                     count: doc.items.length,
