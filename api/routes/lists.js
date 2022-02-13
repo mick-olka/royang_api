@@ -49,7 +49,7 @@ router.get('/:url', ((req, res, next) => {
                 let items0 = [];
                 for (let i=page*limit; i<page*limit+limit; i++) {
                     if (doc.items[i]) {
-                        if (doc_items[i].thumbnail) doc_items[i].thumbnail[0]!=="h"? link + doc_items[i].thumbnail : doc_items[i].thumbnail;
+                        if (doc.items[i].thumbnail) doc.items[i].thumbnail[0]!=="h"? link + doc.items[i].thumbnail : doc.items[i].thumbnail;
                         items0.push(doc.items[i]);
                     }
                 }

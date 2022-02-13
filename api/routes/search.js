@@ -10,7 +10,7 @@ router.get('/', async (req, res, next)=>{
     let search_string = String(req.query.str);
     let page = Number(req.query.page)-1;
     let limit = Number(req.query.limit);
-    let locale = req.query.locale;
+    let locale = req.query.locale || "ua";
     let count = 0;
     let search_words = search_string.split(' ').join('|');
     const regex = new RegExp(search_words, 'i') // i for case insensitive
@@ -27,13 +27,17 @@ router.get('/', async (req, res, next)=>{
         .skip(page * limit)
         .exec()
         .then(results =>{
-            for (let i=0; i<results.length; i++) {
-                results[i].thumbnail = results[i].thumbnail && results[i].thumbnail[0]!=="h"? link + results[i].thumbnail : results[i].thumbnail;
-            }
+            let finalRes = results.map(i=>{
+                return {...i._doc,
+                    name: i.name[locale],
+                    thumbnail: i.thumbnail && i.thumbnail[0]!=="h"? link + i.thumbnail : i.thumbnail
+                };
+            });
             let response = {
                 count: count,
-                result: results,
+                result: finalRes,
             }
+            console.log(finalRes);
             res.status(200).json(response);
         })
         .catch(err => {

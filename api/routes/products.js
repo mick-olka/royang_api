@@ -81,17 +81,17 @@ router.get('/:url_name', ((req, res, next) => {
                     oldPrice: doc.oldPrice,
                     images: doc.images,
                     index: doc.index,
-                    features: doc.features,
-                    description: isAdmin? doc.description:doc.description[locale],
+                    features: isAdmin? doc.features : doc.features[locale],
+                    description: isAdmin? doc.description : doc.description[locale],
                     relatedProducts: doc.relatedProducts,
                     similarProducts: doc.similarProducts,
                     thumbnail: doc.thumbnail && doc.thumbnail[0]!=="h"? link + doc.thumbnail : doc.thumbnail,
                     types: doc.types,
                     url: link + "products/" + doc._id,
                 }
-                response.features = response.features.map(f=>{
-                    return f[locale];
-                });
+                // response.features = response.features.map(f=>{
+                //     return f[locale];
+                // });
                 response.images = response.images.map(i=>{
                     return {...i,
                         mainColor: isAdmin? i.mainColor : i.mainColor[locale],

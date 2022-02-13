@@ -9,9 +9,9 @@ const productSchema = mongoose.Schema({
     oldPrice: {type: Number, required: false},
     thumbnail: {type: String, required: false},
     description: {ua:{type: String, required: false}, ru:{type: String, required: false}},
-    features: [{
-        ua:{key: {type: String, required: true}, value: {type: String, required: true}},
-        ru:{key: {type: String, required: true}, value: {type: String, required: true}}}],
+    features: {
+        ua:[{key: {type: String, required: true}, value: {type: String, required: true}}],
+        ru:[{key: {type: String, required: true}, value: {type: String, required: true}}]},
     images: [
         {
             _id: mongoose.Schema.Types.ObjectId,
