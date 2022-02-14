@@ -35,7 +35,7 @@ router.get('/', ((req, res, next) => {
 
 router.get('/:name', ((req, res, next) => {
     const name = req.params.name;
-
+    const locale = req.query.locale || "ua";
     Text_block.findOne({name: name})
         .select(selectArgs)
         .exec()
@@ -44,7 +44,7 @@ router.get('/:name', ((req, res, next) => {
                 const response = {
                     _id: doc._id,
                     name: doc.name,
-                    text: doc.text,
+                    text: doc.text[locale],
                     nav_link: doc.nav_link,
                 }
                 res.status(200).json(response);
@@ -56,7 +56,7 @@ router.get('/:name', ((req, res, next) => {
         });
 }));
 
-router.post('/', checkAuth, (req, res, next) => {
+router.post('/', (req, res, next) => {
     const new_text = new Text_block({
         _id: new mongoose.Types.ObjectId(),
         name: req.body.name,

@@ -33,8 +33,8 @@ router.get('/', (async (req, res, next) => {
                         url_name: doc.url_name,
                         name: isAdmin ? doc.name : doc.name[locale],
                         code: doc.code,
-                        price: doc.price * 28,
-                        oldPrice: doc.oldPrice * 28 || 0,
+                        price: doc.price,
+                        oldPrice: doc.oldPrice || 0,
                         thumbnail: doc.thumbnail && doc.thumbnail[0]!=="h"? link + doc.thumbnail : doc.thumbnail,
                         url: link + "products/" + doc.url_name
                     }
@@ -59,46 +59,93 @@ router.get('/:url_name', ((req, res, next) => {
         .exec()
         .then(doc => {
             if (doc) {
-
-                for (let i=0; i<doc.relatedProducts.length; i++) {
-                    doc.relatedProducts[i].thumbnail=link+doc.relatedProducts[i].thumbnail;
+                let finalDoc = {...doc._doc};
+                for (let i=0; i<finalDoc.relatedProducts.length; i++) {
+                    finalDoc.relatedProducts[i].thumbnail=link+finalDoc.relatedProducts[i].thumbnail;
                 }
-                for (let i=0; i<doc.similarProducts.length; i++) {
-                    doc.similarProducts[i].thumbnail=link+doc.similarProducts[i].thumbnail;
+                for (let i=0; i<finalDoc.similarProducts.length; i++) {
+                    finalDoc.similarProducts[i].thumbnail=link+finalDoc.similarProducts[i].thumbnail;
                 }
 
-                for (let i=0; i<doc.images.length; i++) {
-                    for (let t=0; t<doc.images[i].pathArr.length; t++) {
-                        doc.images[i].pathArr[t]=link+doc.images[i].pathArr[t];
+                for (let i=0; i<finalDoc.images.length; i++) {
+                    for (let t=0; t<finalDoc.images[i].pathArr.length; t++) {
+                        finalDoc.images[i].pathArr[t]=link+finalDoc.images[i].pathArr[t];
                     }
                 }
-                const response = {
-                    _id: doc._id,
-                    url_name: doc.url_name,
-                    name: isAdmin? doc.name:doc.name[locale],
-                    code: doc.code,
-                    price: doc.price,
-                    oldPrice: doc.oldPrice,
-                    images: doc.images,
-                    index: doc.index,
-                    features: isAdmin? doc.features : doc.features[locale],
-                    description: isAdmin? doc.description : doc.description[locale],
-                    relatedProducts: doc.relatedProducts,
-                    similarProducts: doc.similarProducts,
-                    thumbnail: doc.thumbnail && doc.thumbnail[0]!=="h"? link + doc.thumbnail : doc.thumbnail,
-                    types: doc.types,
-                    url: link + "products/" + doc._id,
-                }
-                // response.features = response.features.map(f=>{
-                //     return f[locale];
-                // });
-                response.images = response.images.map(i=>{
-                    return {...i,
+                finalDoc.images = finalDoc.images.map(i=>{
+                    return {...i._doc,
                         mainColor: isAdmin? i.mainColor : i.mainColor[locale],
                         pillColor: isAdmin? i.pillColor : i.pillColor[locale]};
                 });
+                const response = {
+                    _id: finalDoc._id,
+                    url_name: finalDoc.url_name,
+                    name: isAdmin? finalDoc.name:finalDoc.name[locale],
+                    code: finalDoc.code,
+                    price: finalDoc.price,
+                    oldPrice: finalDoc.oldPrice,
+                    images: finalDoc.images,
+                    index: finalDoc.index,
+                    features: isAdmin? finalDoc.features : finalDoc.features[locale],
+                    description: isAdmin? finalDoc.description : finalDoc.description[locale],
+                    relatedProducts: finalDoc.relatedProducts,
+                    similarProducts: finalDoc.similarProducts,
+                    thumbnail: finalDoc.thumbnail && finalDoc.thumbnail[0]!=="h"? link + finalDoc.thumbnail : finalDoc.thumbnail,
+                    types: finalDoc.types,
+                    url: link + "products/" + finalDoc._id,
+                }
                 res.status(200).json(response);
-            } else res.status(404).json({error: "Not_Found"});
+            } else {
+                Product.findOne({_id: url_name})
+                    .select(selectArgsExtended)
+                    .populate({path: 'relatedProducts', select: '_id url_name name code price thumbnail'})
+                    .populate({path: 'similarProducts', select: '_id url_name name code price thumbnail'})
+                    .exec()
+                    .then(doc => {
+                        if (doc) {
+                            let finalDoc = {...doc._doc};
+                            for (let i=0; i<finalDoc.relatedProducts.length; i++) {
+                                finalDoc.relatedProducts[i].thumbnail=link+finalDoc.relatedProducts[i].thumbnail;
+                            }
+                            for (let i=0; i<finalDoc.similarProducts.length; i++) {
+                                finalDoc.similarProducts[i].thumbnail=link+finalDoc.similarProducts[i].thumbnail;
+                            }
+
+                            for (let i=0; i<finalDoc.images.length; i++) {
+                                for (let t=0; t<finalDoc.images[i].pathArr.length; t++) {
+                                    finalDoc.images[i].pathArr[t]=link+finalDoc.images[i].pathArr[t];
+                                }
+                            }
+                            finalDoc.images = finalDoc.images.map(i=>{
+                                return {...i._doc,
+                                    mainColor: isAdmin? i.mainColor : i.mainColor[locale],
+                                    pillColor: isAdmin? i.pillColor : i.pillColor[locale]};
+                            });
+                            const response = {
+                                _id: finalDoc._id,
+                                url_name: finalDoc.url_name,
+                                name: isAdmin? finalDoc.name:finalDoc.name[locale],
+                                code: finalDoc.code,
+                                price: finalDoc.price,
+                                oldPrice: finalDoc.oldPrice,
+                                images: finalDoc.images,
+                                index: finalDoc.index,
+                                features: isAdmin? finalDoc.features : finalDoc.features[locale],
+                                description: isAdmin? finalDoc.description : finalDoc.description[locale],
+                                relatedProducts: finalDoc.relatedProducts,
+                                similarProducts: finalDoc.similarProducts,
+                                thumbnail: finalDoc.thumbnail && finalDoc.thumbnail[0]!=="h"? link + finalDoc.thumbnail : finalDoc.thumbnail,
+                                types: finalDoc.types,
+                                url: link + "products/" + finalDoc._id,
+                            }
+                            // response.features = response.features.map(f=>{
+                            //     return f[locale];
+                            // });
+                            res.status(200).json(response);
+                        } else res.status(404).json({error: "Not_Found"});
+                    }).catch(err=>{
+                    console.log(err); res.status(500).json({error: err});});
+            }
         })
         .catch(err => {
             console.log(err);

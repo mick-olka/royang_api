@@ -48,11 +48,12 @@ router.post('/:id', multi_upload.array('pathArr', 20), (req, res, next) => {
     const id = req.params.id;
     let pathArr = req.files.map(f=>{return f.path});
     process_photos(req.files, 1200);
+    console.log(req.body);
     const img = new Photo({
         _id: new mongoose.Types.ObjectId(),
         pathArr: pathArr,
-        mainColor: req.body.mainColor,
-        pillColor: req.body.pillColor,
+        mainColor: {ua: req.body.mainColorUA, ru: req.body.mainColorRU},
+        pillColor: {ua: req.body.pillColorUA, ru: req.body.pillColorRU},
     });
     Product.findByIdAndUpdate({_id: id}, {$push: {images: img}}, {safe: true, upsert: false})
         .exec()

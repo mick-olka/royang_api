@@ -39,7 +39,7 @@ router.get('/:url', ((req, res, next) => {
     const locale = req.query.locale || "ua";
     let page = Number(req.query.page)-1;
     let limit = Number(req.query.limit);
-    let isAdmin = req.query.isAdmin;
+    let isAdmin = req.query.isAdmin || false;
     List.findOne({url: url})
         .select("_id name url index items")
         .populate({path: 'items', select: selectArgsMinimized})
@@ -49,8 +49,10 @@ router.get('/:url', ((req, res, next) => {
                 let items0 = [];
                 for (let i=page*limit; i<page*limit+limit; i++) {
                     if (doc.items[i]) {
-                        if (doc.items[i].thumbnail) doc.items[i].thumbnail[0]!=="h"? link + doc.items[i].thumbnail : doc.items[i].thumbnail;
-                        items0.push(doc.items[i]);
+                        let item={...doc.items[i]._doc};
+                        if (item.thumbnail) item.thumbnail = item.thumbnail[0]!=="h"? link + item.thumbnail : item.thumbnail;
+                        item.name = isAdmin? item.name:item.name[locale];
+                        items0.push(item);
                     }
                 }
                 const response = {
