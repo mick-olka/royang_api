@@ -4,10 +4,13 @@ const mongoose = require('mongoose');
 const {deleteFile, selectArgsMinimized, selectArgsExtended} = require('../utils/utils.js');
 const checkAuth = require('../middleware/check-auth');
 const cyrillicToTranslit = require('cyrillic-to-translit-js');
+const _ = require('lodash');
 
 const Product = require('../models/product.js');
 //const {handleIP} = require("../utils/hanpleIPs");
-
+const getThumbnail = (doc) => {
+    return doc.thumbnail && doc.thumbnail[0] !== "h" ? link + doc.thumbnail : doc.thumbnail;
+}
 const link = process.env.BASE_LINK;
 
 router.get('/', (async (req, res, next) => {
@@ -35,7 +38,7 @@ router.get('/', (async (req, res, next) => {
                         code: doc.code,
                         price: doc.price,
                         oldPrice: doc.oldPrice || 0,
-                        thumbnail: doc.thumbnail && doc.thumbnail[0]!=="h"? link + doc.thumbnail : doc.thumbnail,
+                        thumbnail: getThumbnail(doc),
                         url: link + "products/" + doc.url_name
                     }
                 })
@@ -61,10 +64,10 @@ router.get('/:url_name', ((req, res, next) => {
             if (doc) {
                 let finalDoc = {...doc._doc};
                 for (let i=0; i<finalDoc.relatedProducts.length; i++) {
-                    finalDoc.relatedProducts[i].thumbnail=link+finalDoc.relatedProducts[i].thumbnail;
+                    finalDoc.relatedProducts[i].thumbnail=getThumbnail(finalDoc.relatedProducts[i]);
                 }
                 for (let i=0; i<finalDoc.similarProducts.length; i++) {
-                    finalDoc.similarProducts[i].thumbnail=link+finalDoc.similarProducts[i].thumbnail;
+                    finalDoc.similarProducts[i].thumbnail=getThumbnail(finalDoc.similarProducts[i]);
                 }
 
                 for (let i=0; i<finalDoc.images.length; i++) {
@@ -90,7 +93,7 @@ router.get('/:url_name', ((req, res, next) => {
                     description: isAdmin? finalDoc.description : finalDoc.description[locale],
                     relatedProducts: finalDoc.relatedProducts,
                     similarProducts: finalDoc.similarProducts,
-                    thumbnail: finalDoc.thumbnail && finalDoc.thumbnail[0]!=="h"? link + finalDoc.thumbnail : finalDoc.thumbnail,
+                    thumbnail: getThumbnail(finalDoc),
                     types: finalDoc.types,
                     url: link + "products/" + finalDoc._id,
                 }
@@ -105,10 +108,10 @@ router.get('/:url_name', ((req, res, next) => {
                         if (doc) {
                             let finalDoc = {...doc._doc};
                             for (let i=0; i<finalDoc.relatedProducts.length; i++) {
-                                finalDoc.relatedProducts[i].thumbnail=link+finalDoc.relatedProducts[i].thumbnail;
+                                finalDoc.relatedProducts[i].thumbnail=getThumbnail(finalDoc.relatedProducts[i]);
                             }
                             for (let i=0; i<finalDoc.similarProducts.length; i++) {
-                                finalDoc.similarProducts[i].thumbnail=link+finalDoc.similarProducts[i].thumbnail;
+                                finalDoc.similarProducts[i].thumbnail=getThumbnail(finalDoc.similarProducts[i]);
                             }
 
                             for (let i=0; i<finalDoc.images.length; i++) {
@@ -134,7 +137,7 @@ router.get('/:url_name', ((req, res, next) => {
                                 description: isAdmin? finalDoc.description : finalDoc.description[locale],
                                 relatedProducts: finalDoc.relatedProducts,
                                 similarProducts: finalDoc.similarProducts,
-                                thumbnail: finalDoc.thumbnail && finalDoc.thumbnail[0]!=="h"? link + finalDoc.thumbnail : finalDoc.thumbnail,
+                                thumbnail: getThumbnail(finalDoc),
                                 types: finalDoc.types,
                                 url: link + "products/" + finalDoc._id,
                             }
@@ -224,7 +227,19 @@ router.patch('/:id', (req, res, next) => {
     for (let [key, value] of Object.entries(req.body)) {
             updateOps[key] = value;
     }
-
+    if (updateOps.similarProducts) {
+        updateOps.similarProducts = _.uniq(updateOps.similarProducts);
+    }
+    if (updateOps.relatedProducts) {
+        updateOps.relatedProducts = _.uniq(updateOps.relatedProducts);
+    }
+    if (updateOps.images) {
+        for (let i = 0; i < updateOps.images.length; i++) {
+            for (let t = 0; t < updateOps.images[i].pathArr.length; t++) {
+                updateOps.images[i].pathArr[t] = updateOps.images[i].pathArr[t].split(link)[1];
+            }
+        }
+    }
     Product.findOneAndUpdate({_id: id}, {$set: updateOps}, {returnOriginal: false},)
         .exec()
         .then(doc => {

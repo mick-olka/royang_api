@@ -104,7 +104,7 @@ router.delete('/:id/:photosId/', checkAuth, (req, res, next) => {
 
 router.post('/thumbnail/:id', checkAuth, upload.single('thumbnail'), (req, res, next) => {
     const id = req.params.id;
-    process_photos(req.file, 240);
+    process_photos([req.file], 240);
     const findAndUpdate = () => {
         Product.findOneAndUpdate({_id: id}, {$set: {thumbnail: req.file.path}}, {returnOriginal: false},)
             .exec()
