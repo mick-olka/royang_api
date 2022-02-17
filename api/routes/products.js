@@ -53,9 +53,11 @@ router.get('/', (async (req, res, next) => {
 
 router.get('/:url_name', ((req, res, next) => {
     const url_name = req.params.url_name;
+    let isId = !isNaN(url_name[0]);
     let locale = req.query.locale || "ua";
     let isAdmin = req.query.isAdmin;
-    Product.findOne({url_name: {$regex: url_name} })
+    let filter = isId ? {_id: url_name } : {url_name: {$regex: url_name} };
+    Product.findOne(filter)
         .select(selectArgsExtended)
         .populate({path: 'relatedProducts', select: '_id url_name name code price thumbnail'})
         .populate({path: 'similarProducts', select: '_id url_name name code price thumbnail'})
@@ -98,62 +100,10 @@ router.get('/:url_name', ((req, res, next) => {
                     url: link + "products/" + finalDoc._id,
                 }
                 res.status(200).json(response);
-            } else {
-                Product.findOne({_id: url_name})
-                    .select(selectArgsExtended)
-                    .populate({path: 'relatedProducts', select: '_id url_name name code price thumbnail'})
-                    .populate({path: 'similarProducts', select: '_id url_name name code price thumbnail'})
-                    .exec()
-                    .then(doc => {
-                        if (doc) {
-                            let finalDoc = {...doc._doc};
-                            for (let i=0; i<finalDoc.relatedProducts.length; i++) {
-                                finalDoc.relatedProducts[i].thumbnail=getThumbnail(finalDoc.relatedProducts[i]);
-                            }
-                            for (let i=0; i<finalDoc.similarProducts.length; i++) {
-                                finalDoc.similarProducts[i].thumbnail=getThumbnail(finalDoc.similarProducts[i]);
-                            }
-
-                            for (let i=0; i<finalDoc.images.length; i++) {
-                                for (let t=0; t<finalDoc.images[i].pathArr.length; t++) {
-                                    finalDoc.images[i].pathArr[t]=link+finalDoc.images[i].pathArr[t];
-                                }
-                            }
-                            finalDoc.images = finalDoc.images.map(i=>{
-                                return {...i._doc,
-                                    mainColor: isAdmin? i.mainColor : i.mainColor[locale],
-                                    pillColor: isAdmin? i.pillColor : i.pillColor[locale]};
-                            });
-                            const response = {
-                                _id: finalDoc._id,
-                                url_name: finalDoc.url_name,
-                                name: isAdmin? finalDoc.name:finalDoc.name[locale],
-                                code: finalDoc.code,
-                                price: finalDoc.price,
-                                oldPrice: finalDoc.oldPrice,
-                                images: finalDoc.images,
-                                index: finalDoc.index,
-                                features: isAdmin? finalDoc.features : finalDoc.features[locale],
-                                description: isAdmin? finalDoc.description : finalDoc.description[locale],
-                                relatedProducts: finalDoc.relatedProducts,
-                                similarProducts: finalDoc.similarProducts,
-                                thumbnail: getThumbnail(finalDoc),
-                                types: finalDoc.types,
-                                url: link + "products/" + finalDoc._id,
-                            }
-                            // response.features = response.features.map(f=>{
-                            //     return f[locale];
-                            // });
-                            res.status(200).json(response);
-                        } else res.status(404).json({error: "Not_Found"});
-                    }).catch(err=>{
+            } else res.status(404).json({error: "Not_Found"});
+                    })
+        .catch(err=>{
                     console.log(err); res.status(500).json({error: err});});
-            }
-        })
-        .catch(err => {
-            console.log(err);
-            res.status(500).json({error: err});
-        });
 }));
 
 router.post('/', (req, res, next) => {
@@ -232,6 +182,9 @@ router.patch('/:id', (req, res, next) => {
     }
     if (updateOps.relatedProducts) {
         updateOps.relatedProducts = _.uniq(updateOps.relatedProducts);
+    }
+    if (updateOps.url_name==="") {
+        updateOps.url_name=id;
     }
     if (updateOps.images) {
         for (let i = 0; i < updateOps.images.length; i++) {

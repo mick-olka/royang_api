@@ -3,7 +3,6 @@ const router = express.Router();
 const {selectArgsMinimized} = require('../utils/utils.js');
 
 const Product = require('../models/product.js');
-const {isNumeric} = require("../utils/utils");
 const link = process.env.BASE_LINK;
 
 router.get('/', async (req, res, next)=>{
@@ -13,9 +12,10 @@ router.get('/', async (req, res, next)=>{
     let locale = req.query.locale || "ua";
     let count = 0;
     let search_words = search_string.split(' ').join('|');
+    console.log(search_words);
     const regex = new RegExp(search_words, 'i') // i for case insensitive
-    let filter = {name:{ [locale]: {$regex: regex} } };
-    if (isNumeric(search_string)) filter = {code: {$regex: regex}};
+    let filter = {$or:[ {"name.ua":{$regex: regex }}, {"name.ru":{$regex: regex} }, {code: {$regex: regex}} ]};
+    // if (isNumeric(search_string)) filter = {code: {$regex: regex}};
 
     await Product.countDocuments(filter, function(err, c) {
         count=c;
@@ -37,7 +37,6 @@ router.get('/', async (req, res, next)=>{
                 count: count,
                 result: finalRes,
             }
-            console.log(finalRes);
             res.status(200).json(response);
         })
         .catch(err => {

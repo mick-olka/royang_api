@@ -75,7 +75,7 @@ router.get('/:url', ((req, res, next) => {
 router.post('/', checkAuth, (req, res, next) => {
     const product = new List({
         _id: new mongoose.Types.ObjectId(),
-        name: req.body.name,
+        name: {ua: req.body.name['ua'], ru: req.body.name['ru']},
         items: [],
         url: req.body.url,
         index: req.body.index,
