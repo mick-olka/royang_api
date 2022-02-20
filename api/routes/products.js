@@ -39,7 +39,7 @@ router.get('/', (async (req, res, next) => {
                         url_name: doc.url_name,
                         name: isAdmin ? doc.name : doc.name[locale],
                         code: doc.code,
-                        price: isAdmin ? doc.price : Math.floor(doc.price * cv),
+                        price: Math.floor(isAdmin ? doc.price : doc.price * cv),
                         oldPrice: doc.oldPrice || 0,
                         thumbnail: getThumbnail(doc),
                         url: link + "products/" + doc.url_name
@@ -96,7 +96,7 @@ router.get('/:url_name', (async (req, res, next) => {
                     url_name: finalDoc.url_name,
                     name: isAdmin ? finalDoc.name : finalDoc.name[locale],
                     code: finalDoc.code,
-                    price: isAdmin ? finalDoc.price : Math.floor(finalDoc.price * cv),
+                    price: Math.floor(isAdmin ? finalDoc.price : finalDoc.price * cv),
                     oldPrice: finalDoc.oldPrice,
                     images: finalDoc.images,
                     index: finalDoc.index,
