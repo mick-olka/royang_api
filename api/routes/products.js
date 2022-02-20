@@ -5,9 +5,8 @@ const {deleteFile, selectArgsMinimized, selectArgsExtended} = require('../utils/
 const checkAuth = require('../middleware/check-auth');
 const cyrillicToTranslit = require('cyrillic-to-translit-js');
 const _ = require('lodash');
-
 const Product = require('../models/product.js');
-//const {handleIP} = require("../utils/hanpleIPs");
+const Text = require('../models/text_block.js');
 const getThumbnail = (doc) => {
     return doc.thumbnail && doc.thumbnail[0] !== "h" ? link + doc.thumbnail : doc.thumbnail;
 }
@@ -17,11 +16,15 @@ router.get('/', (async (req, res, next) => {
     let page = Number(req.query.page)-1;
     let limit = Number(req.query.limit);
     let locale = req.query.locale || "ua";
-    let isAdmin = req.query.isAdmin;
-    let count = 0;
+    let isAdmin = req.query.isAdmin || false;
+    let count = 0, cv = 1;
     await Product.countDocuments({}, function(err, c) {
         count=c;
     });
+    await Text.find({name: "currency_value"}, (e, doc)=> {
+        cv=parseFloat(doc[0].text['ua']);
+    });
+    console.log(cv);
     Product.find().sort({index: -1})
         .select(selectArgsMinimized)
         .limit(limit)
@@ -36,7 +39,7 @@ router.get('/', (async (req, res, next) => {
                         url_name: doc.url_name,
                         name: isAdmin ? doc.name : doc.name[locale],
                         code: doc.code,
-                        price: doc.price,
+                        price: isAdmin ? doc.price : doc.price * cv,
                         oldPrice: doc.oldPrice || 0,
                         thumbnail: getThumbnail(doc),
                         url: link + "products/" + doc.url_name
@@ -51,12 +54,16 @@ router.get('/', (async (req, res, next) => {
         });
 }));
 
-router.get('/:url_name', ((req, res, next) => {
+router.get('/:url_name', (async (req, res, next) => {
     const url_name = req.params.url_name;
+    let cv = 1;
     let isId = !isNaN(url_name[0]);
     let locale = req.query.locale || "ua";
-    let isAdmin = req.query.isAdmin;
-    let filter = isId ? {_id: url_name } : {url_name: {$regex: url_name} };
+    let isAdmin = req.query.isAdmin || false;
+    let filter = isId ? {_id: url_name} : {url_name: {$regex: url_name}};
+    await Text.find({name: "currency_value"}, (e, doc) => {
+        cv = parseFloat(doc[0].text['ua']);
+    });
     Product.findOne(filter)
         .select(selectArgsExtended)
         .populate({path: 'relatedProducts', select: '_id url_name name code price thumbnail'})
@@ -65,34 +72,36 @@ router.get('/:url_name', ((req, res, next) => {
         .then(doc => {
             if (doc) {
                 let finalDoc = {...doc._doc};
-                for (let i=0; i<finalDoc.relatedProducts.length; i++) {
-                    finalDoc.relatedProducts[i].thumbnail=getThumbnail(finalDoc.relatedProducts[i]);
+                for (let i = 0; i < finalDoc.relatedProducts.length; i++) {
+                    finalDoc.relatedProducts[i].thumbnail = getThumbnail(finalDoc.relatedProducts[i]);
                 }
-                for (let i=0; i<finalDoc.similarProducts.length; i++) {
-                    finalDoc.similarProducts[i].thumbnail=getThumbnail(finalDoc.similarProducts[i]);
+                for (let i = 0; i < finalDoc.similarProducts.length; i++) {
+                    finalDoc.similarProducts[i].thumbnail = getThumbnail(finalDoc.similarProducts[i]);
                 }
 
-                for (let i=0; i<finalDoc.images.length; i++) {
-                    for (let t=0; t<finalDoc.images[i].pathArr.length; t++) {
-                        finalDoc.images[i].pathArr[t]=link+finalDoc.images[i].pathArr[t];
+                for (let i = 0; i < finalDoc.images.length; i++) {
+                    for (let t = 0; t < finalDoc.images[i].pathArr.length; t++) {
+                        finalDoc.images[i].pathArr[t] = link + finalDoc.images[i].pathArr[t];
                     }
                 }
-                finalDoc.images = finalDoc.images.map(i=>{
-                    return {...i._doc,
-                        mainColor: isAdmin? i.mainColor : i.mainColor[locale],
-                        pillColor: isAdmin? i.pillColor : i.pillColor[locale]};
+                finalDoc.images = finalDoc.images.map(i => {
+                    return {
+                        ...i._doc,
+                        mainColor: isAdmin ? i.mainColor : i.mainColor[locale],
+                        pillColor: isAdmin ? i.pillColor : i.pillColor[locale]
+                    };
                 });
                 const response = {
                     _id: finalDoc._id,
                     url_name: finalDoc.url_name,
-                    name: isAdmin? finalDoc.name:finalDoc.name[locale],
+                    name: isAdmin ? finalDoc.name : finalDoc.name[locale],
                     code: finalDoc.code,
-                    price: finalDoc.price,
+                    price: isAdmin ? finalDoc.price : finalDoc.price * cv,
                     oldPrice: finalDoc.oldPrice,
                     images: finalDoc.images,
                     index: finalDoc.index,
-                    features: isAdmin? finalDoc.features : finalDoc.features[locale],
-                    description: isAdmin? finalDoc.description : finalDoc.description[locale],
+                    features: isAdmin ? finalDoc.features : finalDoc.features[locale],
+                    description: isAdmin ? finalDoc.description : finalDoc.description[locale],
                     relatedProducts: finalDoc.relatedProducts,
                     similarProducts: finalDoc.similarProducts,
                     thumbnail: getThumbnail(finalDoc),
@@ -101,9 +110,11 @@ router.get('/:url_name', ((req, res, next) => {
                 }
                 res.status(200).json(response);
             } else res.status(404).json({error: "Not_Found"});
-                    })
-        .catch(err=>{
-                    console.log(err); res.status(500).json({error: err});});
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(500).json({error: err});
+        });
 }));
 
 router.post('/', (req, res, next) => {
@@ -175,7 +186,7 @@ router.patch('/:id', (req, res, next) => {
     const id = req.params.id;
     const updateOps = {};
     for (let [key, value] of Object.entries(req.body)) {
-            updateOps[key] = value;
+        updateOps[key] = value;
     }
     if (updateOps.similarProducts) {
         updateOps.similarProducts = _.uniq(updateOps.similarProducts);
