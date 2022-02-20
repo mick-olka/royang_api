@@ -11,7 +11,7 @@ router.post('/:list_url', checkAuth, (req, res, next) => {
     let pid=req.body.prodId;
 
     const addTypeToProduct = (type_name) => {
-        Product.findByIdAndUpdate({_id: pid}, { $addToSet: {types: type_name}}, {safe: true, upsert: false})
+        Product.findByIdAndUpdate({_id: pid}, { $addToSet: {types: {name: type_name, url: list_url }}}, {safe: true, upsert: false})
         .exec()
         .then(doc=>{
             res.status(200).json({message: "PUSHED ITEM TO LIST", code: 0, productId: pid,});
@@ -32,8 +32,8 @@ router.delete('/:url/:elId/', checkAuth, (req, res, next) => {
     const url = req.params.url;
     const elId = req.params.elId;
 
-    const delTypeInProduct = (type_name) => {
-        Product.findOneAndUpdate({_id: elId}, { $pull: {types: type_name}}, {safe: true, upsert: false})
+    const delTypeInProduct = (type_url) => {
+        Product.findOneAndUpdate({_id: elId}, { $pull: {types: {url: type_url}}}, {safe: true, upsert: false})
         .exec()
         .then(doc=>{
             res.status(200).json( {message: "DELETED LIST ITEM", code: 0, productId: elId, });
@@ -44,7 +44,7 @@ router.delete('/:url/:elId/', checkAuth, (req, res, next) => {
         .exec()
         .then(doc => {
             if (doc) {
-                delTypeInProduct(doc.name);
+                delTypeInProduct(doc.url);
             } else res.status(404).json({error: "Not_Found", code: 1});
         })
         .catch(err => {
