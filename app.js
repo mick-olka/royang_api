@@ -26,7 +26,7 @@ mongoose.connect(process.env.MON_URI,
     }).then(r => console.log("connected"));
 
 app.use(cookies());
-app.use(morgan('dev')); //  dev
+app.use(morgan(process.env.MORGAN_FORMAT)); //  dev
 app.use('/uploads', express.static('uploads'));
 app.use('/res', express.static('res'));
 app.use(bodyParser.urlencoded({extended: true}));
@@ -90,21 +90,5 @@ app.use((error, req, res, next) => {
         message: error.message
     });
 });
-
-// readDat();  //
-// writeDat("egfywu");
-// readDat();
-//
-// fs.readdir(dirPath, ()=> {
-//
-//    if (err) {
-//        return console.log('Unable to scan dir: '+err);
-//    }
-//
-//    files.forEach(file=>{
-//        console.log(file);
-//    })
-//
-// });
 
 module.exports = app;
