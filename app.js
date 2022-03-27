@@ -35,7 +35,7 @@ app.use(bodyParser.json());
 app.use((req, res, next) => {
     const corsWhiteList = [
         'http://192.168.50.163:3000',
-        'http://192.168.1.163:3000',
+        'http://192.168.0.103:3005',
         'http://192.168.1.164:3000',
         'http://192.168.1.24:3000',
         'http://192.168.1.24:3001',
