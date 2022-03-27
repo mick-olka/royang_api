@@ -14,7 +14,6 @@ router.get('/', async (req, res, next)=>{
     let locale = req.query.locale || "ua";
     let count = 0, cv = 1;
     let search_words = search_string.split(' ').join('|');
-    console.log(search_words);
     const regex = new RegExp(search_words, 'i') // i for case insensitive
     let filter = {$or:[ {"name.ua":{$regex: regex }}, {"name.ru":{$regex: regex} }, {code: {$regex: regex}} ]};
     // if (isNumeric(search_string)) filter = {code: {$regex: regex}};

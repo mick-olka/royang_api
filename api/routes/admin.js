@@ -43,9 +43,9 @@ router.post('/login', (req, res, next) => {
                 setKey(Math.random().toString(36).slice(-8));
                 res.cookie(`data`, getKey(), {
                     maxAge: 24 * 60 * 60 * 1000, // 24 hours,
-                    // secure: true,
+                    // secure: true,    // only with https
                     httpOnly: true,
-                    sameSite: 'lax'
+                    sameSite: 'none'
                 });
                 res.status(200).json({ msg: "SUCCESS", code: 0 });
             } else {

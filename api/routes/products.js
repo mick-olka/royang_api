@@ -20,13 +20,20 @@ router.get('/', (async (req, res, next) => {
     let locale = req.query.locale || "ua";
     let isAdmin = req.query.isAdmin || false;
     let count = 0, cv = 1;
-    await Product.countDocuments({}, function(err, c) {
+    let search_string = req.query.str || null;
+    let filter = null;
+    if (search_string) {
+        let search_words = search_string.split(' ').join('|');
+        const regex = new RegExp(search_words, 'i') // i for case insensitive
+        filter = {$or:[ {"name.ua":{$regex: regex }}, {"name.ru":{$regex: regex} }, {code: {$regex: regex}} ]};
+    }
+    await Product.countDocuments(filter, function(err, c) {
         count=c;
     });
     await Text.find({name: "currency_value"}, (e, doc)=> {
         cv=parseFloat(doc[0].text['ua']);
     });
-    Product.find().sort({index: -1})
+    Product.find(filter).sort({index: -1})
         .select(selectArgsMinimized)
         .limit(limit)
         .skip(page * limit)
