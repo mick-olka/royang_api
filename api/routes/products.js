@@ -41,7 +41,7 @@ router.get('/', (async (req, res, next) => {
                         name: isAdmin ? doc.name : doc.name[locale],
                         code: doc.code,
                         price: Math.floor(isAdmin ? doc.price : doc.price * cv),
-                        oldPrice: doc.oldPrice || 0,
+                        oldPrice: Math.floor(isAdmin ? doc.oldPrice : doc.oldPrice * cv) || 0,
                         thumbnail: getThumbnail(doc),
                         url: link + "products/" + doc.url_name
                     }

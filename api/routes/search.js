@@ -36,7 +36,8 @@ router.get('/', async (req, res, next)=>{
                 return {...i._doc,
                     name: i.name[locale],
                     thumbnail: i.thumbnail && i.thumbnail[0]!=="h"? link + i.thumbnail : i.thumbnail,
-                    price: Math.floor(isAdmin ? i.price : i.price * cv)
+                    price: Math.floor(isAdmin ? i.price : i.price * cv),
+                    oldPrice: Math.floor(isAdmin ? i.oldPrice : i.oldPrice * cv) || 0
                 };
             });
             let response = {
