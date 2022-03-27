@@ -20,8 +20,8 @@ const productSchema = mongoose.Schema({
             pillColor: {ua: String, ru: String}
         }
     ],
-    relatedProducts: [{type: mongoose.Schema.Types.ObjectId, ref: 'Product', unique: false}],
-    similarProducts: [{type: mongoose.Schema.Types.ObjectId, ref: 'Product', unique: false}],
+    relatedProducts: [{type: mongoose.Schema.Types.ObjectId, ref: 'Product'}],
+    similarProducts: [{type: mongoose.Schema.Types.ObjectId, ref: 'Product'}],
     types: [],
     index: {type: Number, required: false},
 });

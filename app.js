@@ -26,7 +26,7 @@ mongoose.connect(process.env.MON_URI,
     }).then(r => console.log("connected"));
 
 app.use(cookies());
-app.use(morgan('dev')); //  dev
+app.use(morgan(process.env.MORGAN_FORMAT)); //  dev
 app.use('/uploads', express.static('uploads'));
 app.use('/res', express.static('res'));
 app.use(bodyParser.urlencoded({extended: true}));
@@ -34,8 +34,8 @@ app.use(bodyParser.json());
 
 app.use((req, res, next) => {
     const corsWhiteList = [
-        'http://185.65.245.26:3000',
-        'http://192.168.1.163:3000',
+        'http://192.168.50.163:3000',
+        'http://192.168.0.103:3005',
         'http://192.168.1.164:3000',
         'http://192.168.1.24:3000',
         'http://192.168.1.24:3001',
@@ -93,21 +93,5 @@ app.use((error, req, res, next) => {
         message: error.message
     });
 });
-
-// readDat();  //
-// writeDat("egfywu");
-// readDat();
-//
-// fs.readdir(dirPath, ()=> {
-//
-//    if (err) {
-//        return console.log('Unable to scan dir: '+err);
-//    }
-//
-//    files.forEach(file=>{
-//        console.log(file);
-//    })
-//
-// });
 
 module.exports = app;

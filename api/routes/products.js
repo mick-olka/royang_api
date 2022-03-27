@@ -1,3 +1,4 @@
+const https = require("https");
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
@@ -7,6 +8,7 @@ const cyrillicToTranslit = require('cyrillic-to-translit-js');
 const _ = require('lodash');
 const Product = require('../models/product.js');
 const Text = require('../models/text_block.js');
+const fs = require("fs");
 const getThumbnail = (doc) => {
     return doc.thumbnail && doc.thumbnail[0] !== "h" ? link + doc.thumbnail : doc.thumbnail;
 }
@@ -18,14 +20,20 @@ router.get('/', (async (req, res, next) => {
     let locale = req.query.locale || "ua";
     let isAdmin = req.query.isAdmin || false;
     let count = 0, cv = 1;
-    await Product.countDocuments({}, function(err, c) {
+    let search_string = req.query.str || null;
+    let filter = null;
+    if (search_string) {
+        let search_words = search_string.split(' ').join('|');
+        const regex = new RegExp(search_words, 'i') // i for case insensitive
+        filter = {$or:[ {"name.ua":{$regex: regex }}, {"name.ru":{$regex: regex} }, {code: {$regex: regex}} ]};
+    }
+    await Product.countDocuments(filter, function(err, c) {
         count=c;
     });
     await Text.find({name: "currency_value"}, (e, doc)=> {
         cv=parseFloat(doc[0].text['ua']);
     });
-    console.log(cv);
-    Product.find().sort({index: -1})
+    Product.find(filter).sort({index: -1})
         .select(selectArgsMinimized)
         .limit(limit)
         .skip(page * limit)
@@ -40,7 +48,7 @@ router.get('/', (async (req, res, next) => {
                         name: isAdmin ? doc.name : doc.name[locale],
                         code: doc.code,
                         price: Math.floor(isAdmin ? doc.price : doc.price * cv),
-                        oldPrice: doc.oldPrice || 0,
+                        oldPrice: Math.floor(isAdmin ? doc.oldPrice : doc.oldPrice * cv) || 0,
                         thumbnail: getThumbnail(doc),
                         url: link + "products/" + doc.url_name
                     }
@@ -118,6 +126,17 @@ router.get('/:url_name', (async (req, res, next) => {
 }));
 
 router.post('/', (req, res, next) => {
+    let newFileName=null;
+    if (req.body.thumbnail) {
+        let file_url = req.body.thumbnail;
+        let nameWithExt = file_url.split('/').pop();
+        newFileName = nameWithExt.split('.')[0]+Date.now()+'.'+nameWithExt.split('.').pop();
+        const file = fs.createWriteStream("./uploads/" +newFileName);
+        const request = https.get(file_url, function(response) {
+            response.pipe(file);
+            console.log('file saved');
+        });
+    }
     const product = new Product({
         _id: new mongoose.Types.ObjectId(),
         name: req.body.name,
@@ -128,7 +147,7 @@ router.post('/', (req, res, next) => {
         features: req.body.features,
         description: req.body.description,
         index: req.body.index || 1,
-        thumbnail: req.body.thumbnail || null,
+        thumbnail: req.body.thumbnail ? link+'uploads/'+newFileName : null,
         images: [],
         relatedProducts: [],
         similarProducts: [],
