@@ -107,3 +107,4 @@ dist
 api/.DS_Store
 
 ./uploads
+/uploads/
