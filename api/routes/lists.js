@@ -41,7 +41,7 @@ router.get('/:url', ((req, res, next) => {
     let limit = Number(req.query.limit);
     let isAdmin = req.query.isAdmin || false;
     List.findOne({url: url})
-        .select("_id name url index items")
+        .select("_id name url index items description keywords")
         .populate({path: 'items', select: selectArgsMinimized})
         .exec()
         .then(doc => {
@@ -61,6 +61,8 @@ router.get('/:url', ((req, res, next) => {
                     items: items0,
                     index: doc.index,
                     count: doc.items.length,
+                    description: doc.description || null,
+                    keywords: doc.keywords || [],
                     url: doc.url,
                 }
                 res.status(200).json(response);
