@@ -42,6 +42,8 @@ app.use((req, res, next) => {
         'http://localhost:3005',
         'http://192.168.1.243:3000',
         'http://178.54.240.228:3690',
+        'http://185.65.245.26:3005',
+        'http://185.65.245.26:3000'
     ];
     const origin=req.headers.origin;
     if  (corsWhiteList.includes(origin)) {
