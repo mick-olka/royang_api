@@ -5,7 +5,7 @@ const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const cookies = require("cookie-parser");
-
+const checkAuth = require('./api/middleware/check-auth');
 const productRoutes = require('./api/routes/products');
 const productPhotosRoutes = require('./api/routes/productPhotos');
 const listsRoutes = require('./api/routes/lists');
@@ -15,6 +15,7 @@ const searchRoutes = require('./api/routes/search');
 const orderRoutes = require('./api/routes/orders');
 const sliderRoutes = require('./api/routes/slider');
 const textRoutes = require('./api/routes/text_blocks');
+const {restoreBackup, makeBackup} = require("./api/utils/data_backup");
 let getCount=0;
 
 mongoose.connect(process.env.MON_URI,
@@ -79,6 +80,24 @@ app.use('/search', searchRoutes);
 app.use('/orders', orderRoutes);
 app.use('/slider', sliderRoutes);
 app.use('/text', textRoutes);
+
+app.get('/make_backup', checkAuth, async (req, res, next) => {
+    try {
+        await makeBackup();
+        res.status(200).json({msg: "backup_done", code: 0});
+    } catch (e) {
+        res.status(500).json({error: e, code: 1});
+    }
+});
+
+app.get('/restore_backup', checkAuth, async (req, res, next) => {
+    try {
+        await restoreBackup();
+        res.status(200).json({msg: "backup_restored", code: 0});
+    } catch (e) {
+        res.status(500).json({error: e, code: 1});
+    }
+});
 
 app.use((req, res, next) => {
     const error = new Error('Not Found');

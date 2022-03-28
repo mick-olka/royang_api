@@ -203,7 +203,7 @@ router.delete('/:id', checkAuth, (req, res, next) => {
         });
 });
 
-router.patch('/:id', (req, res, next) => {
+router.patch('/:id', checkAuth, (req, res, next) => {
     const id = req.params.id;
     const updateOps = {};
     for (let [key, value] of Object.entries(req.body)) {
