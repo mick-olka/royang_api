@@ -106,5 +106,7 @@ dist
 .DS_Store
 api/.DS_Store
 
-./uploads
 /uploads/
+/backup/backup.tar
+/backup/photos.zip
+/backup/uploads/

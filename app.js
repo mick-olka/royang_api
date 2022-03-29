@@ -1,6 +1,7 @@
 require('dotenv').config()
 const express = require('express');
 const app = express();
+const path = require("path");
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
@@ -97,6 +98,16 @@ app.get('/restore_backup', checkAuth, async (req, res, next) => {
     } catch (e) {
         res.status(500).json({error: e, code: 1});
     }
+});
+
+app.get('/download_archive_photos', checkAuth, (req, res, next) => {
+    const file = path.resolve(__dirname, 'backup', 'photos.zip');
+    res.download(file); // Set disposition and send it.
+});
+
+app.get('/download_archive_db', checkAuth, (req, res, next) => {
+    const file = path.resolve(__dirname, 'backup', 'backup.tar');
+    res.download(file); // Set disposition and send it.
 });
 
 app.use((req, res, next) => {
