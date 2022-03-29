@@ -110,6 +110,7 @@ router.get('/:url_name', (async (req, res, next) => {
                     index: finalDoc.index,
                     features: isAdmin ? finalDoc.features : finalDoc.features[locale],
                     description: isAdmin ? finalDoc.description : finalDoc.description[locale],
+                    keywords: finalDoc.keywords || [],
                     relatedProducts: finalDoc.relatedProducts,
                     similarProducts: finalDoc.similarProducts,
                     thumbnail: getThumbnail(finalDoc),
@@ -146,6 +147,7 @@ router.post('/', (req, res, next) => {
         code: req.body.code,
         features: req.body.features,
         description: req.body.description,
+        keywords: req.body.keywords || [],
         index: req.body.index || 1,
         thumbnail: req.body.thumbnail ? link+'uploads/'+newFileName : null,
         images: [],
@@ -201,7 +203,7 @@ router.delete('/:id', checkAuth, (req, res, next) => {
         });
 });
 
-router.patch('/:id', (req, res, next) => {
+router.patch('/:id', checkAuth, (req, res, next) => {
     const id = req.params.id;
     const updateOps = {};
     for (let [key, value] of Object.entries(req.body)) {
