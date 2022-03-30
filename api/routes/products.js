@@ -132,7 +132,8 @@ router.post('/', (req, res, next) => {
     if (req.body.thumbnail) {   //  means we give link. If we pass file, it goes in separate req
         let file_url = req.body.thumbnail;
         let nameWithExt = file_url.split('/').pop();
-        newFileName = nameWithExt.split('.')[0]+Date.now()+'.'+nameWithExt.split('.').pop();
+        //newFileName = nameWithExt.split('.')[0]+Date.now()+'.'+nameWithExt.split('.').pop();
+        newFileName = nameWithExt;
         const file = fs.createWriteStream("./uploads/"+newFileName);
         const request = https.get(file_url, function(response) {
             response.pipe(file);
@@ -218,6 +219,9 @@ router.patch('/:id', checkAuth, (req, res, next) => {
     }
     if (updateOps.url_name==="") {
         updateOps.url_name=id;
+    }
+    if (updateOps.thumbnail) {
+        delete updateOps.thumbnail;
     }
     if (updateOps.images) {
         for (let i = 0; i < updateOps.images.length; i++) {
