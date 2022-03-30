@@ -10,31 +10,33 @@ const Product = require('../models/product.js');
 const Text = require('../models/text_block.js');
 const List = require('../models/list.js');
 
-exports.makeBackup = () => {
-   copyAllFiles(uploads, backup_uploads);
-   archivePhotos();
-    dumpMongo2Localfile().then(()=>{
+exports.makeBackup = async () => {
+    try {
+        await copyAllFiles(uploads, backup_uploads);
+        await archivePhotos();
+        await dumpMongo2Localfile();
         return 0;
-    }).catch(e=>{
+    } catch(e) {
         console.log(e);
         return 1;
-    });
+   }
 }
 
-exports.restoreBackup = () => {
-    copyAllFiles(backup_uploads, uploads);
-    deleteAllCollections();
-    restoreLocalfile2Mongo('rotang').then(()=>{
+exports.restoreBackup = async () => {
+    try {
+    await copyAllFiles(backup_uploads, uploads);
+    await deleteAllCollections();
+    await restoreLocalfile2Mongo('rotang');
         return 0;
-    }).catch(e=>{
+    } catch(e) {
         console.log(e);
         return 1;
-    });
+    }
 }
 
-const copyAllFiles = (src, dest) => {
-    let exists = fs.existsSync(src);
-    if (!exists) fs.mkdirSync(src);
+const copyAllFiles = async (src, dest) => {
+    let exists = fs.existsSync(dest);
+    if (!exists) fs.mkdirSync(dest);
     else delAllFiles(dest);
     let files = fs.readdirSync(src);
     files.forEach(f => {
@@ -44,7 +46,7 @@ const copyAllFiles = (src, dest) => {
 }
 
 const delAllFiles = (directory) => {
-    fs.readdir(directory, (err, files) => {
+    fs.readdirSync(directory, (err, files) => {
         if (err) throw err;
         for (const file of files) {
             fs.unlink(path.join(directory, file), err => {
