@@ -9,10 +9,11 @@ const _ = require('lodash');
 const Product = require('../models/product.js');
 const Text = require('../models/text_block.js');
 const fs = require("fs");
-const getThumbnail = (doc) => {
-    return doc.thumbnail && doc.thumbnail[0] !== "h" ? link + doc.thumbnail : doc.thumbnail;
-}
+
 const link = process.env.BASE_LINK;
+const getThumbnail = (doc) => {
+    return doc.thumbnail && link + 'uploads/'+ doc.thumbnail;
+}
 
 router.get('/', (async (req, res, next) => {
     let page = Number(req.query.page)-1;
@@ -128,11 +129,11 @@ router.get('/:url_name', (async (req, res, next) => {
 
 router.post('/', (req, res, next) => {
     let newFileName=null;
-    if (req.body.thumbnail) {
+    if (req.body.thumbnail) {   //  means we give link. If we pass file, it goes in separate req
         let file_url = req.body.thumbnail;
         let nameWithExt = file_url.split('/').pop();
         newFileName = nameWithExt.split('.')[0]+Date.now()+'.'+nameWithExt.split('.').pop();
-        const file = fs.createWriteStream("./uploads/" +newFileName);
+        const file = fs.createWriteStream("./uploads/"+newFileName);
         const request = https.get(file_url, function(response) {
             response.pipe(file);
             console.log('file saved');
@@ -149,7 +150,7 @@ router.post('/', (req, res, next) => {
         description: req.body.description,
         keywords: req.body.keywords || [],
         index: req.body.index || 1,
-        thumbnail: req.body.thumbnail ? link+'uploads/'+newFileName : null,
+        thumbnail: newFileName,
         images: [],
         relatedProducts: [],
         similarProducts: [],
@@ -193,7 +194,7 @@ router.delete('/:id', checkAuth, (req, res, next) => {
                         deleteFile(imgs[i].pathArr[t].split('/').pop());
                     }
                 }
-                if (doc.thumbnail) deleteFile(doc.thumbnail.split("/").pop());
+                if (doc.thumbnail) deleteFile(doc.thumbnail);
                 deleteProduct();
             } else res.status(404).json({error: "Not_Found"});
         })
