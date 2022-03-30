@@ -106,14 +106,14 @@ router.post('/thumbnail/:id', checkAuth, upload.single('thumbnail'), (req, res, 
     const id = req.params.id;
     process_photos([req.file], 240);
     const findAndUpdate = () => {
-        Product.findOneAndUpdate({_id: id}, {$set: {thumbnail: req.file.path}}, {returnOriginal: false},)
+        Product.findOneAndUpdate({_id: id}, {$set: {thumbnail: req.file.filename}}, {returnOriginal: false},)
             .exec()
             .then(doc => {
                 res.status(200).json({
                     message: "THUMBNAIL UPDATED",
                     url: link + "products/" + id,
                     req: req.body,
-                    file: link+req.file.path,
+                    file: link+'uploads/'+req.file.path,
                     code: 0
                 });
             })
@@ -125,7 +125,7 @@ router.post('/thumbnail/:id', checkAuth, upload.single('thumbnail'), (req, res, 
         .then(doc => {
             if (doc) {
                 findAndUpdate();//  call update
-                if (req.file&&doc.thumbnail) deleteFile(doc.thumbnail.split('/').pop());//  del thumb
+                if (req.file && doc.thumbnail) deleteFile(doc.thumbnail);//  del thumb
             } else res.status(404).json({error: "Not_Found", code: 1});
         })
         .catch(err => {
