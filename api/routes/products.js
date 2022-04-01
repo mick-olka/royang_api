@@ -116,7 +116,7 @@ router.get('/:url_name', (async (req, res, next) => {
                     similarProducts: finalDoc.similarProducts,
                     thumbnail: getThumbnail(finalDoc),
                     types: finalDoc.types,
-                    url: link + "products/" + finalDoc._id,
+                    url: link + "products/" + finalDoc.url_name,
                 }
                 res.status(200).json(response);
             } else res.status(404).json({error: "Not_Found"});
@@ -131,9 +131,8 @@ router.post('/', (req, res, next) => {
     let newFileName=null;
     if (req.body.thumbnail) {   //  means we give link. If we pass file, it goes in separate req
         let file_url = req.body.thumbnail;
-        let nameWithExt = file_url.split('/').pop();
         //newFileName = nameWithExt.split('.')[0]+Date.now()+'.'+nameWithExt.split('.').pop();
-        newFileName = nameWithExt;
+        newFileName = file_url.split('/').pop();
         const file = fs.createWriteStream("./uploads/"+newFileName);
         const request = https.get(file_url, function(response) {
             response.pipe(file);
@@ -143,7 +142,7 @@ router.post('/', (req, res, next) => {
     const product = new Product({
         _id: new mongoose.Types.ObjectId(),
         name: req.body.name,
-        url_name: req.body.url_name==="" ? cyrillicToTranslit().transform(req.body.name, "_") : req.body.url_name,
+        url_name: req.body.url_name==="" ? cyrillicToTranslit().transform(req.body.name['ua'].toLowerCase(), "_") : req.body.url_name,
         price: req.body.price,
         oldPrice: req.body.oldPrice,
         code: req.body.code,
@@ -163,7 +162,8 @@ router.post('/', (req, res, next) => {
             result: {
                 _id: result._id,
                 name: result.name,
-                url: link + "products/" + result._id,
+                url_name: result.url_name,
+                url: link + "products/" + result.url_name,
             }
         });
     })
@@ -218,7 +218,8 @@ router.patch('/:id', checkAuth, (req, res, next) => {
         updateOps.relatedProducts = _.uniq(updateOps.relatedProducts);
     }
     if (updateOps.url_name==="") {
-        updateOps.url_name=id;
+        if (updateOps.name['ua']) updateOps.url_name = cyrillicToTranslit().transform(updateOps.name['ua'].toLowerCase(), "_");
+        else updateOps.url_name = id;
     }
     if (updateOps.thumbnail) {
         delete updateOps.thumbnail;
