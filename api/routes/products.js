@@ -37,7 +37,7 @@ router.get('/', (async (req, res, next) => {
     await Text.find({name: "currency_value"}, (e, doc)=> {
         cv=parseFloat(doc[0].text['ua']);
     });
-    Product.find(filter).sort({index: -1})
+    Product.find(filter).sort({index: 1})
         .select(selectArgsMinimized)
         .limit(limit)
         .skip(page * limit)
