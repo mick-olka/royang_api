@@ -4,7 +4,7 @@ module.exports = {
 		{
 		name: 'rotang_api',
 		script: 'npm',
-		args: 'run dev',
+		args: 'run web',
 		},
 	],
 };
