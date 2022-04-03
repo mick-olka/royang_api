@@ -50,7 +50,7 @@ router.get('/:url', ((req, res, next) => {
                 for (let i=page*limit; i<page*limit+limit; i++) {
                     if (doc.items[i]) {
                         let item={...doc.items[i]._doc};
-                        if (item.thumbnail) item.thumbnail = item.thumbnail[0]!=="h"? link + item.thumbnail : item.thumbnail;
+                        if (item.thumbnail) item.thumbnail = item.thumbnail[0]!=="h"? link+'uploads/'+item.thumbnail : item.thumbnail;
                         item.name = isAdmin? item.name:item.name[locale];
                         items0.push(item);
                     }
