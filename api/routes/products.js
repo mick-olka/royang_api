@@ -14,6 +14,9 @@ const link = process.env.BASE_LINK;
 const getThumbnail = (doc) => {
     return doc.thumbnail && link + 'uploads/'+ doc.thumbnail;
 }
+// Product.updateMany({}, {  $set: { index: 1000 }  }, {}, (err) => {
+//     console.log(err);
+// });
 
 router.get('/', (async (req, res, next) => {
     let page = Number(req.query.page)-1;
@@ -48,6 +51,7 @@ router.get('/', (async (req, res, next) => {
                         url_name: doc.url_name,
                         name: isAdmin ? doc.name : doc.name[locale],
                         code: doc.code,
+                        index: doc.index,
                         price: Math.floor(isAdmin ? doc.price : doc.price * cv),
                         oldPrice: Math.floor(isAdmin ? doc.oldPrice : doc.oldPrice * cv) || 0,
                         thumbnail: getThumbnail(doc),
