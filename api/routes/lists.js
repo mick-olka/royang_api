@@ -46,7 +46,7 @@ router.get('/:url', (async (req, res, next) => {
         cv = parseFloat(doc[0].text['ua']);
     });
     List.findOne({url: url})
-        .select("_id name url index items")
+        .select("_id name url index items description keywords")
         .populate({path: 'items', select: selectArgsMinimized})
         .exec()
         .then(doc => {
@@ -54,9 +54,9 @@ router.get('/:url', (async (req, res, next) => {
                 let items0 = [];
                 for (let i = page * limit; i < page * limit + limit; i++) {
                     if (doc.items[i]) {
-                        let item = {...doc.items[i]._doc};
-                        if (item.thumbnail) item.thumbnail = item.thumbnail[0] !== "h" ? link + item.thumbnail : item.thumbnail;
-                        item.name = isAdmin ? item.name : item.name[locale];
+                        let item={...doc.items[i]._doc};
+                        if (item.thumbnail) item.thumbnail = item.thumbnail[0]!=="h"? link+'uploads/'+item.thumbnail : item.thumbnail;
+                        item.name = isAdmin? item.name:item.name[locale];
                         item.price = Math.floor(isAdmin ? item.price : item.price * cv);
                         items0.push(item);
                     }
@@ -67,6 +67,8 @@ router.get('/:url', (async (req, res, next) => {
                     items: items0,
                     index: doc.index,
                     count: doc.items.length,
+                    description: doc.description || null,
+                    keywords: doc.keywords || [],
                     url: doc.url,
                 }
                 res.status(200).json(response);

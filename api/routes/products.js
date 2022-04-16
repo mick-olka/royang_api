@@ -9,10 +9,14 @@ const _ = require('lodash');
 const Product = require('../models/product.js');
 const Text = require('../models/text_block.js');
 const fs = require("fs");
-const getThumbnail = (doc) => {
-    return doc.thumbnail && doc.thumbnail[0] !== "h" ? link + doc.thumbnail : doc.thumbnail;
-}
+
 const link = process.env.BASE_LINK;
+const getThumbnail = (doc) => {
+    return doc.thumbnail && link + 'uploads/'+ doc.thumbnail;
+}
+// Product.updateMany({}, {  $set: { index: 1000 }  }, {}, (err) => {
+//     console.log(err);
+// });
 
 router.get('/', (async (req, res, next) => {
     let page = Number(req.query.page)-1;
@@ -33,7 +37,7 @@ router.get('/', (async (req, res, next) => {
     await Text.find({name: "currency_value"}, (e, doc)=> {
         cv=parseFloat(doc[0].text['ua']);
     });
-    Product.find(filter).sort({index: -1})
+    Product.find(filter).sort({index: 1})
         .select(selectArgsMinimized)
         .limit(limit)
         .skip(page * limit)
@@ -47,6 +51,7 @@ router.get('/', (async (req, res, next) => {
                         url_name: doc.url_name,
                         name: isAdmin ? doc.name : doc.name[locale],
                         code: doc.code,
+                        index: doc.index,
                         price: Math.floor(isAdmin ? doc.price : doc.price * cv),
                         oldPrice: Math.floor(isAdmin ? doc.oldPrice : doc.oldPrice * cv) || 0,
                         thumbnail: getThumbnail(doc),
@@ -110,11 +115,12 @@ router.get('/:url_name', (async (req, res, next) => {
                     index: finalDoc.index,
                     features: isAdmin ? finalDoc.features : finalDoc.features[locale],
                     description: isAdmin ? finalDoc.description : finalDoc.description[locale],
+                    keywords: finalDoc.keywords || [],
                     relatedProducts: finalDoc.relatedProducts,
                     similarProducts: finalDoc.similarProducts,
                     thumbnail: getThumbnail(finalDoc),
                     types: finalDoc.types,
-                    url: link + "products/" + finalDoc._id,
+                    url: link + "products/" + finalDoc.url_name,
                 }
                 res.status(200).json(response);
             } else res.status(404).json({error: "Not_Found"});
@@ -127,11 +133,11 @@ router.get('/:url_name', (async (req, res, next) => {
 
 router.post('/', (req, res, next) => {
     let newFileName=null;
-    if (req.body.thumbnail) {
+    if (req.body.thumbnail) {   //  means we give link. If we pass file, it goes in separate req
         let file_url = req.body.thumbnail;
-        let nameWithExt = file_url.split('/').pop();
-        newFileName = nameWithExt.split('.')[0]+Date.now()+'.'+nameWithExt.split('.').pop();
-        const file = fs.createWriteStream("./uploads/" +newFileName);
+        //newFileName = nameWithExt.split('.')[0]+Date.now()+'.'+nameWithExt.split('.').pop();
+        newFileName = file_url.split('/').pop();
+        const file = fs.createWriteStream("./uploads/"+newFileName);
         const request = https.get(file_url, function(response) {
             response.pipe(file);
             console.log('file saved');
@@ -140,14 +146,15 @@ router.post('/', (req, res, next) => {
     const product = new Product({
         _id: new mongoose.Types.ObjectId(),
         name: req.body.name,
-        url_name: req.body.url_name==="" ? cyrillicToTranslit().transform(req.body.name, "_") : req.body.url_name,
+        url_name: req.body.url_name==="" ? cyrillicToTranslit().transform(req.body.name['ua'].toLowerCase(), "_") : req.body.url_name,
         price: req.body.price,
         oldPrice: req.body.oldPrice,
         code: req.body.code,
         features: req.body.features,
         description: req.body.description,
+        keywords: req.body.keywords || [],
         index: req.body.index || 1,
-        thumbnail: req.body.thumbnail ? link+'uploads/'+newFileName : null,
+        thumbnail: newFileName,
         images: [],
         relatedProducts: [],
         similarProducts: [],
@@ -159,7 +166,8 @@ router.post('/', (req, res, next) => {
             result: {
                 _id: result._id,
                 name: result.name,
-                url: link + "products/" + result._id,
+                url_name: result.url_name,
+                url: link + "products/" + result.url_name,
             }
         });
     })
@@ -191,7 +199,7 @@ router.delete('/:id', checkAuth, (req, res, next) => {
                         deleteFile(imgs[i].pathArr[t].split('/').pop());
                     }
                 }
-                if (doc.thumbnail) deleteFile(doc.thumbnail.split("/").pop());
+                if (doc.thumbnail) deleteFile(doc.thumbnail);
                 deleteProduct();
             } else res.status(404).json({error: "Not_Found"});
         })
@@ -201,7 +209,7 @@ router.delete('/:id', checkAuth, (req, res, next) => {
         });
 });
 
-router.patch('/:id', (req, res, next) => {
+router.patch('/:id', checkAuth, (req, res, next) => {
     const id = req.params.id;
     const updateOps = {};
     for (let [key, value] of Object.entries(req.body)) {
@@ -214,7 +222,11 @@ router.patch('/:id', (req, res, next) => {
         updateOps.relatedProducts = _.uniq(updateOps.relatedProducts);
     }
     if (updateOps.url_name==="") {
-        updateOps.url_name=id;
+        if (updateOps.name['ua']) updateOps.url_name = cyrillicToTranslit().transform(updateOps.name['ua'].toLowerCase(), "_");
+        else updateOps.url_name = id;
+    }
+    if (updateOps.thumbnail) {
+        delete updateOps.thumbnail;
     }
     if (updateOps.images) {
         for (let i = 0; i < updateOps.images.length; i++) {

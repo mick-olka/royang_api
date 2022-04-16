@@ -6,6 +6,8 @@ const listSchema = mongoose.Schema({
     items: [{type: mongoose.Schema.Types.ObjectId, ref: 'Product'}],
     url: {type: String, required: true, unique: true},
     index: {type: Number, required: true, default: 0},
+    description: {type: String, required: false},
+    keywords: [{type: String}]
 });
 
 module.exports = mongoose.model('List', listSchema);

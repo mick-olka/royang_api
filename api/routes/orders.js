@@ -1,20 +1,26 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
-
 const Order = require('../models/order.js');
 const checkAuth = require('../middleware/check-auth');
-
 const link = process.env.BASE_LINK;
 const {selectArgsMinimized, selectArgsExtended} = require('../utils/utils.js');
 const {handleIP} = require("../utils/hanpleIPs");
-
 const selectOrderArgsMinimized="_id name phone status date";
 const selectOrderArgsExtended="_id name phone message cart sum status date";
-
 const { Telegraf } = require('telegraf')
-
 const bot = new Telegraf(process.env.BOT_TOKEN)
+var nodemailer = require('nodemailer');
+
+var transporter = nodemailer.createTransport({
+    host: 'smtp.ukr.net',
+    port: 465,
+    secure: true,
+    auth: {
+        user: 'rotangua@ukr.net',
+        pass: process.env.MAIL_PW
+    }
+});
 
 let chatId=null;
 bot.start((ctx) => {ctx.reply('Welcome'); if (chatId==null) chatId=ctx.message.chat.id});
@@ -100,7 +106,7 @@ router.post('/', async (req, res, next) => {
     });
     let cartText = "";
     for (let i=0; i<order.cart.length; i++) {
-        let cartItemText=`# ${req.body.cart[i].name} ${order.cart[i].count} шт. MC: ${order.cart[i].mainColor} PC: ${order.cart[i].pillColor}`;
+        let cartItemText=`# ${req.body.cart[i].name} ${order.cart[i].count} шт. color: ${order.cart[i].mainColor} / ${order.cart[i].pillColor}`;
         cartText=cartText+`\n${cartItemText}`;
     }
     let tgMsg = `New Order\n\n${order.name}\n${order.phone}\n msg: ${order.message}\n sum: ${order.sum}\n${cartText}`;
@@ -109,6 +115,19 @@ router.post('/', async (req, res, next) => {
         res.status(429).json({msg: "Too Many Orders", code: 1});
     } else {
         if (chatId) await bot.telegram.sendMessage(chatId, tgMsg);  //
+        let mailOptions = {
+            from: 'rotangua@ukr.net',
+            to: 'mail@rotang.ua',
+            subject: 'New Order - '+new Date().toISOString(),
+            text: tgMsg
+        };
+        await transporter.sendMail(mailOptions, function(error, info){
+            if (error) {
+                console.log(error);
+            } else {
+                console.log('Email sent: ' + info.response);
+            }
+        });
         order.save().then(result => {
         res.status(201).json({
             message: "ORDER CREATED",
