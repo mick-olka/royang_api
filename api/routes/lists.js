@@ -7,6 +7,7 @@ const checkAuth = require('../middleware/check-auth');
 
 const link = process.env.BASE_LINK;
 const {selectArgsMinimized} = require("../utils/utils");
+const Text = require("../models/text_block.js");
 
 router.get('/', ((req, res, next) => {
     const locale = req.query.locale || "ua";
@@ -34,12 +35,16 @@ router.get('/', ((req, res, next) => {
         });
 }));
 
-router.get('/:url', ((req, res, next) => {
+router.get('/:url', (async (req, res, next) => {
     const url = req.params.url;
     const locale = req.query.locale || "ua";
-    let page = Number(req.query.page)-1;
+    let cv = 1;
+    let page = Number(req.query.page) - 1;
     let limit = Number(req.query.limit);
     let isAdmin = req.query.isAdmin || false;
+    await Text.find({name: "currency_value"}, (e, doc) => {
+        cv = parseFloat(doc[0].text['ua']);
+    });
     List.findOne({url: url})
         .select("_id name url index items")
         .populate({path: 'items', select: selectArgsMinimized})
@@ -47,17 +52,18 @@ router.get('/:url', ((req, res, next) => {
         .then(doc => {
             if (doc) {
                 let items0 = [];
-                for (let i=page*limit; i<page*limit+limit; i++) {
+                for (let i = page * limit; i < page * limit + limit; i++) {
                     if (doc.items[i]) {
-                        let item={...doc.items[i]._doc};
-                        if (item.thumbnail) item.thumbnail = item.thumbnail[0]!=="h"? link + item.thumbnail : item.thumbnail;
-                        item.name = isAdmin? item.name:item.name[locale];
+                        let item = {...doc.items[i]._doc};
+                        if (item.thumbnail) item.thumbnail = item.thumbnail[0] !== "h" ? link + item.thumbnail : item.thumbnail;
+                        item.name = isAdmin ? item.name : item.name[locale];
+                        item.price = Math.floor(isAdmin ? item.price : item.price * cv);
                         items0.push(item);
                     }
                 }
                 const response = {
                     _id: doc._id,
-                    name: isAdmin? doc.name:doc.name[locale],
+                    name: isAdmin ? doc.name : doc.name[locale],
                     items: items0,
                     index: doc.index,
                     count: doc.items.length,
