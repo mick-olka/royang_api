@@ -29,8 +29,8 @@ mongoose.connect(process.env.MON_URI,
 
 app.use(cookies());
 app.use(morgan(process.env.MORGAN_FORMAT)); //  dev
-app.use('/uploads', express.static('uploads'));
-app.use('/res', express.static('res'));
+app.use('/api/uploads', express.static('uploads'));
+app.use('/api/res', express.static('res'));
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 
@@ -64,26 +64,26 @@ app.use((req, res, next) => {
     next();
 });
 
-app.get('/', (req, res) => {
+app.get('/api', (req, res) => {
     getCount++;
     res.send({invites: getCount, message: 'GET LOST'});
 });
 
-app.post('/', (req, res) => {
+app.post('/api', (req, res) => {
     res.send(req.body);
 });
 
-app.use('/products', productRoutes);
-app.use('/photos', productPhotosRoutes);
-app.use('/lists', listsRoutes);
-app.use('/list_elements', listElementsRoutes);
-app.use('/admin', loginRoutes);
-app.use('/search', searchRoutes);
-app.use('/orders', orderRoutes);
-app.use('/slider', sliderRoutes);
-app.use('/text', textRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/photos', productPhotosRoutes);
+app.use('/api/lists', listsRoutes);
+app.use('/api/list_elements', listElementsRoutes);
+app.use('/api/admin', loginRoutes);
+app.use('/api/search', searchRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/slider', sliderRoutes);
+app.use('/api/text', textRoutes);
 
-app.get('/make_backup', checkAuth, async (req, res, next) => {
+app.get('/api/make_backup', checkAuth, async (req, res, next) => {
     try {
         await makeBackup();
         res.status(200).json({msg: "backup_done", code: 0});
@@ -92,7 +92,7 @@ app.get('/make_backup', checkAuth, async (req, res, next) => {
     }
 });
 
-app.get('/restore_backup', checkAuth, async (req, res, next) => {
+app.get('/api/restore_backup', checkAuth, async (req, res, next) => {
     try {
         await restoreBackup();
         res.status(200).json({msg: "backup_restored", code: 0});
@@ -101,12 +101,12 @@ app.get('/restore_backup', checkAuth, async (req, res, next) => {
     }
 });
 
-app.get('/download_archive_photos', checkAuth, (req, res, next) => {
+app.get('/api/download_archive_photos', checkAuth, (req, res, next) => {
     const file = path.resolve(__dirname, 'backup', 'photos.zip');
     res.download(file); // Set disposition and send it.
 });
 
-app.get('/download_archive_db', checkAuth, (req, res, next) => {
+app.get('/api/download_archive_db', checkAuth, (req, res, next) => {
     const file = path.resolve(__dirname, 'backup', 'backup.tar');
     res.download(file); // Set disposition and send it.
 });
